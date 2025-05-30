@@ -3,7 +3,7 @@
 export default function Footer() {
   return (
     <footer className="bg-white border-t py-8">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-500 text-sm text-center">
             © 2024 Secure Visit. Todos los derechos reservados.

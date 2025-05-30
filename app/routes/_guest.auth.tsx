@@ -1,10 +1,13 @@
-import type { MetaFunction } from "@remix-run/node";
+import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useState } from "react";
 import LoginForm from "~/components/auth/LoginForm";
-import { ActionFunctionArgs, data } from "@remix-run/node";
-import { validateLoginFormData, validateRegisterFormData } from "~/validations/auth.validations";
-import { login, register } from "~/server/auth.server";
+import { ActionFunctionArgs, data, redirect } from "@remix-run/node";
+import {
+  validateLoginFormData,
+  validateRegisterFormData,
+} from "~/validations/auth.validations";
+import { login, register, sessionStorage } from "~/server/auth.server";
 import RegisterForm from "~/components/auth/RegisterForm";
 
 export const meta: MetaFunction = () => {
@@ -12,6 +15,19 @@ export const meta: MetaFunction = () => {
     { title: "Login" },
     { name: "description", content: "Inicia sesión" },
   ];
+};
+
+export const loader: LoaderFunction = async ({ request }) => {
+  const session = await sessionStorage.getSession(
+    request.headers.get("Cookie")
+  );
+  const authToken = session.get("authToken");
+
+  if (authToken) {
+    return redirect("/visits");
+  }
+
+  return null;
 };
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -36,7 +52,8 @@ export async function action({ request }: ActionFunctionArgs) {
       password_confirmation: formData.get("password_confirmation") as string,
     };
 
-    const clientSideValidationErrors = validateRegisterFormData(registerFormData);
+    const clientSideValidationErrors =
+      validateRegisterFormData(registerFormData);
 
     if (clientSideValidationErrors)
       return data({ clientSideValidationErrors }, { status: 400 });
