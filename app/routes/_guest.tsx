@@ -14,7 +14,7 @@ export default function Index() {
   return (
     <>
       <GuestHeader />
-      <main className="flex h-screen items-center justify-center bg-primary-color px-6">
+      <main className="pt-28 pb-14 px-4 xs:px-8 sm:px-20 min-h-screen bg-[#f7f9fb]">
         <Outlet />
       </main>
       <Footer />

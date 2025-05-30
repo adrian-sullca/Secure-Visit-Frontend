@@ -14,8 +14,8 @@ export default function GuestHeader() {
             to="/auth"
             className={({ isActive }) =>
               isActive
-                ? "text-custom-blue px-5 font-medium border-b-2 border-custom-blue h-full flex items-center transition duration-300 ease-in-out"
-                : "hover:text-custom-blue px-5 h-full flex items-center transition duration-300 ease-in-out"
+                ? "text-custom-blue font-medium px-5 h-full flex items-center transition duration-300 ease-in-out"
+                : "hover:text-custom-blue px-5 h-full font-medium flex items-center transition duration-300 ease-in-out"
             }
           >
             Inicia sesión

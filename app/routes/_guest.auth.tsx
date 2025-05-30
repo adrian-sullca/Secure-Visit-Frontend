@@ -3,8 +3,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useState } from "react";
 import LoginForm from "~/components/auth/LoginForm";
 import { ActionFunctionArgs, data } from "@remix-run/node";
-import { validateLoginFormData } from "~/validations/auth.validations";
-import { login } from "~/server/auth.server";
+import { validateLoginFormData, validateRegisterFormData } from "~/validations/auth.validations";
+import { login, register } from "~/server/auth.server";
+import RegisterForm from "~/components/auth/RegisterForm";
 
 export const meta: MetaFunction = () => {
   return [
@@ -28,7 +29,19 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return await login(loginFormData);
   } else if (formData.get("mode") == "register") {
-    // TODO: Implementar register
+    const registerFormData = {
+      name: formData.get("name") as string,
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+      password_confirmation: formData.get("password_confirmation") as string,
+    };
+
+    const clientSideValidationErrors = validateRegisterFormData(registerFormData);
+
+    if (clientSideValidationErrors)
+      return data({ clientSideValidationErrors }, { status: 400 });
+
+    return await register(registerFormData);
   }
 }
 
@@ -57,19 +70,15 @@ export default function AuthPage() {
           onValueChange={(tabValue) => handleTabChange(tabValue)}
           className="w-full space-y-8"
         >
-          <TabsList className="grid w-full grid-cols-2 h-12">
-            <TabsTrigger value="login" className="h-10">
-              Iniciar Sesión
-            </TabsTrigger>
-            <TabsTrigger value="register" className="h-10">
-              Registrarse
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
+            <TabsTrigger value="register">Registrarse</TabsTrigger>
           </TabsList>
           <TabsContent value="login">
             <LoginForm />
           </TabsContent>
           <TabsContent value="register">
-            <h1>Register</h1>
+            <RegisterForm />
           </TabsContent>
         </Tabs>
       </div>
