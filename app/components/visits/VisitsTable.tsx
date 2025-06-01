@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "./../ui/table";
+import { Textarea } from "./../ui/textarea";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,11 +45,15 @@ import { Badge } from "../ui/badge";
 import { format } from "date-fns";
 import {
   Building,
+  Building2,
   CalendarIcon,
   CheckCircle,
   Clock,
   Eye,
   LogOut,
+  Pencil,
+  PencilOff,
+  User,
   Users,
   X,
 } from "lucide-react";
@@ -63,6 +68,22 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { VisitFormatted } from "~/types/visits.types";
+import { ScrollArea } from "./../ui/scroll-area";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "../ui/dialog";
+import CompanyFormSection from "../visitForm/CompanyDataSection";
+import CompanyDataSection from "../visitForm/CompanyDataSection";
+import ProfessionalDataSection from "../visitForm/VisitorDataSection";
+import GeneralVisitData from "../visitForm/GeneralVisitDataSection";
+import AddOrUpdateVisitModal from "../visitForm/AddOrUpdateVisitModal";
 
 export default function VisitsTable() {
   const loaderData =
@@ -90,9 +111,14 @@ export default function VisitsTable() {
   const [companyCIF, setCompanyCIF] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [companyTelephone, setCompanyTelephone] = useState("");
-
   const [isPopoverDateEntryOpen, setIsPopoverDateEntryOpen] = useState(false);
   const [isPopoverDateExitOpen, setIsPopoverDateExitOpen] = useState(false);
+
+  const [editMode, setEditMode] = useState(false);
+  const [showMode, setShowMode] = useState(false);
+  const [selectedVisit, setSelectedVisit] = useState(null);
+  const [showModalAddOrUpdate, setShowModalAddOrUpdate] = useState(false);
+
   const fetcher = useFetcher();
 
   const calculateDuration = (timeEntry: string, timeExit: string | null) => {
@@ -208,7 +234,12 @@ export default function VisitsTable() {
             </div>
             <div>
               {/* Button to add a new visit */}
-              <Button>
+              <Button
+                onClick={() => {
+                  setShowMode(false);
+                  setShowModalAddOrUpdate(true);
+                }}
+              >
                 <Plus />
                 <span className="ml-1">Añadir visita</span>
               </Button>
@@ -818,7 +849,11 @@ export default function VisitsTable() {
                           <Button
                             variant="outline"
                             size="sm"
-                            // onClick={() => setSelectedVisit()}
+                            onClick={() => {
+                              setSelectedVisit(visit);
+                              setShowMode(true);
+                              setShowModalAddOrUpdate(true);
+                            }}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -862,6 +897,16 @@ export default function VisitsTable() {
           </div>
         </CardContent>
       </Card>
+      {/* Modal Add or Update Visit */}
+      {showModalAddOrUpdate && (
+        <AddOrUpdateVisitModal
+          showMode={showMode}
+          showModalAddOrUpdate={showModalAddOrUpdate}
+          setShowModalAddOrUpdate={() => setShowModalAddOrUpdate(false)}
+          selectedVisit={selectedVisit}
+          setSelectedVisit={setSelectedVisit}
+        />
+      )}
     </>
   );
 }

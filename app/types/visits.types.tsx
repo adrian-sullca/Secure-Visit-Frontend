@@ -93,7 +93,7 @@ export interface VisitFormatted {
   // Datos de visitas profesionales
   company_id: string | number | null;
   NIF: string | null;
-  age: number | null;
+  age: string | number | null;
   service_id: string | number | null;
   service_name: string | null;
   task: string | null;
