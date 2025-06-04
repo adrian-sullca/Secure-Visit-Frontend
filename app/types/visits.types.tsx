@@ -34,11 +34,20 @@ export interface ProfessionalVisit {
   company_id: number;
   NIF: string;
   age: number;
-  service: Service;
-  task: string;
   created_at: string;
   updated_at: string;
   company: Company;
+}
+
+export interface ProfessionalService {
+  id: number;
+  entry_exit_id: number;
+  professional_id: number;
+  service_id: number;
+  task: string;
+  created_at: string;
+  updated_at: string;
+  service: Service;
 }
 
 export interface Visit {
@@ -62,6 +71,7 @@ export interface Visits {
   created_at: string;
   updated_at: string;
   visit: Visit;
+  professional_service?: ProfessionalService;
 }
 
 export interface VisitFormatted {
@@ -82,7 +92,6 @@ export interface VisitFormatted {
   visit_surname: string;
   visit_email: string;
 
-  // Datos de visitas familiares
   student_name: string | null;
   student_surname: string | null;
   student_course: string | null;
@@ -90,7 +99,6 @@ export interface VisitFormatted {
   motive_name: string | null;
   custom_motive: string | null;
 
-  // Datos de visitas profesionales
   company_id: string | number | null;
   NIF: string | null;
   age: string | number | null;
@@ -109,6 +117,7 @@ export interface VisitFilters {
   perPage: string;
 
   // General Visit Filters
+  visitState: string;
   visitType: string;
   visitName: string;
   visitSurname: string;
@@ -117,7 +126,7 @@ export interface VisitFilters {
   visitDateExit: string;
   visitTimeEntry: string;
   visitTimeExit: string;
-  
+
   // Family Visit Filters
   studentName: string;
   studentSurname: string;
@@ -128,6 +137,32 @@ export interface VisitFilters {
   professionalNIF: string;
   serviceId: string;
   task: string;
+  companyCIF: string;
+  companyName: string;
+  companyTelephone: string;
+}
+
+export interface FormDataAddFamilyVisit {
+  visitType: string;
+  motiveId: string;
+  motiveDescription: string;
+  visitName: string;
+  visitSurname: string;
+  visitEmail: string;
+  studentName: string;
+  studentSurname: string;
+  studentCourse: string;
+}
+
+export interface FormDataAddProfessionalVisit {
+  visitType: string;
+  serviceId: string;
+  taskDescription: string;
+  professionalNIF: string;
+  professionalAge: string;
+  visitName: string;
+  visitSurname: string;
+  visitEmail: string;
   companyCIF: string;
   companyName: string;
   companyTelephone: string;

@@ -1,6 +1,5 @@
-// import HamburgerMenu from "../utils/HamburgerMenu";
-import { NavLink } from "@remix-run/react";
-import { SecureVisitLogoBlue } from "./../utils/Icons";
+import { Link, NavLink } from "@remix-run/react";
+import { SecureVisitLogoBlue } from "~/components/utils/Icons";
 
 export default function AuthHeader() {
   return (
@@ -28,6 +27,7 @@ export default function AuthHeader() {
           >
             Graficos
           </NavLink>
+          <Link to="/logout">Cerrar sesión</Link>
         </div>
       </div>
     </header>

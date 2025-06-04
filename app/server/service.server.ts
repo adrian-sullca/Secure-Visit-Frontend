@@ -1,4 +1,4 @@
-import axiosInstance from "./../config/axios.config";
+import axiosInstance from "~/config/axios.config";
 
 export async function getAllServices(authToken: string) {
   try {

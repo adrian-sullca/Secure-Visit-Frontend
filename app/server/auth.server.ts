@@ -1,6 +1,6 @@
 import { createCookieSessionStorage, json, redirect } from "@remix-run/node";
-import { LoginFormData, RegisterFormData } from "./../types/auth.types";
-import axiosInstance from "./../config/axios.config";
+import { LoginFormData, RegisterFormData } from "~/types/auth.types";
+import axiosInstance from "~/config/axios.config";
 import axios, { isAxiosError } from "axios";
 
 export async function requireAuth(request: Request) {
@@ -128,4 +128,23 @@ export async function register({
       { status: 500 }
     );
   }
+}
+
+export async function logout(request: Request) {
+  await axiosInstance.post("/logout", null, {
+    headers: {
+      Authorization: `Bearer ${await requireAuth(request)}`,
+    },
+  });
+
+  const session = await sessionStorage.getSession(
+    request.headers.get("Cookie")
+  );
+
+  session.unset("authToken");
+  return redirect("/", {
+    headers: {
+      "Set-Cookie": await sessionStorage.destroySession(session),
+    },
+  });
 }

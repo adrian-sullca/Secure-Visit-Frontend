@@ -1,5 +1,3 @@
-// import HamburgerMenu from "../utils/HamburgerMenu";
-
 export default function Footer() {
   return (
     <footer className="bg-white border-t py-8">

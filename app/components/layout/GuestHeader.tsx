@@ -1,6 +1,5 @@
-// import HamburgerMenu from "../utils/HamburgerMenu";
 import { NavLink } from "@remix-run/react";
-import { SecureVisitLogoBlue } from "./../utils/Icons";
+import { SecureVisitLogoBlue } from "~/components/utils/Icons";
 
 export default function GuestHeader() {
   return (

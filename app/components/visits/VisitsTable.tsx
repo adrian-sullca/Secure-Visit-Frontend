@@ -1,5 +1,3 @@
-import type { LoaderFunction, MetaFunction } from "@remix-run/node";
-import { redirect } from "@remix-run/node";
 import {
   Table,
   TableBody,
@@ -7,8 +5,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "./../ui/table";
-import { Textarea } from "./../ui/textarea";
+} from "~/components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,71 +16,68 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "./../ui/alert-dialog";
+} from "~/components/ui/alert-dialog";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "./../ui/card";
+} from "~/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./../ui/select";
+} from "~/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "./../ui/dropdown-menu";
+} from "~/components/ui/dropdown-menu";
 
-import { Badge } from "../ui/badge";
+import { Badge } from "~/components/ui/badge";
 import { format } from "date-fns";
 import {
   Building,
-  Building2,
   CalendarIcon,
   CheckCircle,
   Clock,
   Eye,
   LogOut,
-  Pencil,
-  PencilOff,
-  User,
+  Minus,
   Users,
   X,
+  Download,
+  Funnel,
+  Plus,
 } from "lucide-react";
-import { cn } from "./../../lib/utils";
-import { Calendar } from "./../ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "./../ui/popover";
+import { cn } from "~/lib/utils";
+import { Calendar } from "~/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
 
 import { Button } from "~/components/ui/button";
-import { Download, Funnel, Plus } from "lucide-react";
-import { useState } from "react";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
+import { useEffect, useState } from "react";
+import { Label } from "~/components/ui/label";
+import { Input } from "~/components/ui/input";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { VisitFormatted } from "~/types/visits.types";
-import { ScrollArea } from "./../ui/scroll-area";
+import AddOrUpdateVisitModal from "~/components/visitForm/AddOrUpdateVisitModal";
+import { toast } from "sonner";
 import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose,
-} from "../ui/dialog";
-import CompanyFormSection from "../visitForm/CompanyDataSection";
-import CompanyDataSection from "../visitForm/CompanyDataSection";
-import ProfessionalDataSection from "../visitForm/VisitorDataSection";
-import GeneralVisitData from "../visitForm/GeneralVisitDataSection";
-import AddOrUpdateVisitModal from "../visitForm/AddOrUpdateVisitModal";
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "~/components/ui/pagination";
 
 export default function VisitsTable() {
   const loaderData =
@@ -92,6 +86,7 @@ export default function VisitsTable() {
   const [showFilters, setShowFilters] = useState(false);
   // Filters
   const [visitType, setVisitType] = useState("all");
+  const [visitState, setVisitState] = useState("all");
   const [visitName, setVisitName] = useState("");
   const [visitSurname, setVisitSurname] = useState("");
   const [visitEmail, setVisitEmail] = useState("");
@@ -120,6 +115,31 @@ export default function VisitsTable() {
   const [showModalAddOrUpdate, setShowModalAddOrUpdate] = useState(false);
 
   const fetcher = useFetcher();
+
+  const [fetcherKey, setFetcherKey] = useState("add-or-update-1");
+  const fetcherAddOrUpdate = useFetcher({ key: fetcherKey });
+  const fetcherMarkExit = useFetcher();
+
+  const handleCloseModal = () => {
+    setShowModalAddOrUpdate(false);
+    setSelectedVisit(null);
+    setFetcherKey(`add-or-update-${Date.now()}`);
+  };
+
+  const handlePageChange = (page: number) => {
+    const form = document.getElementById("filters-form") as HTMLFormElement;
+    const input = form.elements.namedItem("page") as HTMLInputElement;
+    if (input) {
+      input.value = page.toString();
+    } else {
+      const newInput = document.createElement("input");
+      newInput.type = "hidden";
+      newInput.name = "page";
+      newInput.value = page.toString();
+      form.appendChild(newInput);
+    }
+    fetcher.submit(form);
+  };
 
   const calculateDuration = (timeEntry: string, timeExit: string | null) => {
     if (!timeExit) return "En curso";
@@ -179,6 +199,9 @@ export default function VisitsTable() {
     value: string,
     setState?: React.Dispatch<React.SetStateAction<string>>
   ) => {
+    if (key == "visitType" || key == "visitState") {
+      handlePageChange(1);
+    }
     // Actualiza el estado
     if (setState) setState(value);
     // Actualiza el input del formulario
@@ -194,11 +217,43 @@ export default function VisitsTable() {
     | undefined;
 
   const visits = fetcherData?.visits || loaderData.visits;
+  const meta = fetcherData?.meta || loaderData.meta;
+
+  useEffect(() => {
+    if (fetcherAddOrUpdate.data?.message) {
+      if (fetcherAddOrUpdate.data.success) {
+        toast.success(fetcherAddOrUpdate.data.message);
+        setShowModalAddOrUpdate(false);
+        const form = document.getElementById("filters-form") as HTMLFormElement;
+        if (form) {
+          const pageInput = form.elements.namedItem("page") as HTMLInputElement;
+          if (pageInput) pageInput.value = "1";
+          fetcher.submit(form);
+        }
+      } else {
+        toast.error(fetcherAddOrUpdate.data.message);
+      }
+    }
+  }, [fetcherAddOrUpdate.data]);
+
+  useEffect(() => {
+    if (fetcherMarkExit.data?.success) {
+      toast.success(fetcherMarkExit.data.message);
+      const form = document.getElementById("filters-form") as HTMLFormElement;
+      if (form) {
+        const pageInput = form.elements.namedItem("page") as HTMLInputElement;
+        if (pageInput) pageInput.value = "1";
+        fetcher.submit(form);
+      }
+    }
+  }, [fetcherMarkExit.data]);
 
   return (
     <>
       <fetcher.Form id="filters-form" method="post">
+        <input type="hidden" name="page" value={meta?.currentPage || 1} />
         <input type="hidden" name="visitType" value={visitType} />
+        <input type="hidden" name="visitState" value={visitState} />
         <input type="hidden" name="visitName" value={visitName} />
         <input type="hidden" name="visitSurname" value={visitSurname} />
         <input type="hidden" name="visitEmail" value={visitEmail} />
@@ -246,31 +301,48 @@ export default function VisitsTable() {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col xsm:flex-row gap-2 xsm:justify-between">
-            {/* Select for type of visit */}
-            <Select
-              value={visitType}
-              onValueChange={(value) =>
-                handleFilterChange("visitType", value, setVisitType)
-              }
-            >
-              <SelectTrigger className="max-w-[230px]">
-                <SelectValue placeholder="Tipo de visita" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las visitas</SelectItem>
-                <SelectItem value="family">Visitas familiares</SelectItem>
-                <SelectItem value="professional">
-                  Visitas profesionales
-                </SelectItem>
-              </SelectContent>
-            </Select>
+        <CardContent className="w-full">
+          <div className="flex flex-col sm:flex-row gap-2 xsm:justify-between">
+            <div className="flex gap-2 flex-col xsm:flex-row w-full">
+              {/* Select for type of visit */}
+              <Select
+                value={visitType}
+                onValueChange={(value) =>
+                  handleFilterChange("visitType", value, setVisitType)
+                }
+              >
+                <SelectTrigger className="sm:max-w-[185px]">
+                  <SelectValue placeholder="Tipo de visita" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las visitas</SelectItem>
+                  <SelectItem value="family">Visitas familiares</SelectItem>
+                  <SelectItem value="professional">
+                    Visitas profesionales
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                value={visitState}
+                onValueChange={(value) =>
+                  handleFilterChange("visitState", value, setVisitState)
+                }
+              >
+                <SelectTrigger className="sm:max-w-[170px]">
+                  <SelectValue placeholder="Tipo de visita" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los estados</SelectItem>
+                  <SelectItem value="active">Activas</SelectItem>
+                  <SelectItem value="finished">Finalizadas</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex gap-2 flex-col xsm:flex-row">
               {/* TODO: EXPORTAR DATOS EN PDF O EXCEL */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
+                  <Button variant="outline" className="w-full">
                     <Download />
                     <span className="ml-1">Descargar</span>
                   </Button>
@@ -282,7 +354,7 @@ export default function VisitsTable() {
               </DropdownMenu>
               <Button
                 variant="outline"
-                className={`${showFilters ? "bg-[#f5f5f5]" : ""}`}
+                className={`${showFilters ? "bg-[#f5f5f5]" : ""} w-full`}
                 onClick={() => setShowFilters(!showFilters)}
               >
                 <Funnel />
@@ -820,8 +892,8 @@ export default function VisitsTable() {
                       </TableCell>
                       <TableCell className="w-[100px]">
                         <span className="text-sm font-medium">
-                          {visit.date_exit_formatted == "" ? (
-                            <h1>-</h1>
+                          {!visit.date_exit_formatted ? (
+                            <Minus className="w-3" />
                           ) : (
                             <>
                               <p className="font-medium">
@@ -880,8 +952,20 @@ export default function VisitsTable() {
                                   <AlertDialogCancel>
                                     Cancelar
                                   </AlertDialogCancel>
-                                  <AlertDialogAction>
-                                    Confirmar Salida
+                                  <AlertDialogAction asChild>
+                                    <Button
+                                      onClick={() => {
+                                        fetcherMarkExit.submit(
+                                          {
+                                            intent: "mark-exit",
+                                            entry_id: visit.id,
+                                          },
+                                          { method: "post" }
+                                        );
+                                      }}
+                                    >
+                                      Confirmar Salida
+                                    </Button>
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -895,16 +979,57 @@ export default function VisitsTable() {
               </Table>
             </div>
           </div>
+
+          <Pagination className="mt-4">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (meta.currentPage > 1)
+                      handlePageChange(meta.currentPage - 1);
+                  }}
+                  aria-disabled={meta.currentPage === 1}
+                />
+              </PaginationItem>
+              {Array.from({ length: meta.lastPage }, (_, i) => (
+                <PaginationItem key={i + 1}>
+                  <PaginationLink
+                    href="#"
+                    isActive={meta.currentPage === i + 1}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePageChange(i + 1);
+                    }}
+                  >
+                    {i + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (meta.currentPage < meta.lastPage)
+                      handlePageChange(meta.currentPage + 1);
+                  }}
+                  aria-disabled={meta.currentPage === meta.lastPage}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </CardContent>
       </Card>
       {/* Modal Add or Update Visit */}
       {showModalAddOrUpdate && (
         <AddOrUpdateVisitModal
+          fetcherAddOrUpdate={fetcherAddOrUpdate}
           showMode={showMode}
           showModalAddOrUpdate={showModalAddOrUpdate}
-          setShowModalAddOrUpdate={() => setShowModalAddOrUpdate(false)}
           selectedVisit={selectedVisit}
-          setSelectedVisit={setSelectedVisit}
+          handleCloseModal={handleCloseModal}
         />
       )}
     </>

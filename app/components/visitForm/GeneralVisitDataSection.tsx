@@ -1,21 +1,21 @@
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
+import { Label } from "~/components/ui/label";
+import { Input } from "~/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
+} from "~/components/ui/select";
 import { format } from "date-fns";
-import { Textarea } from "../ui/textarea";
+import { Textarea } from "~/components/ui/textarea";
 import { CalendarIcon, X } from "lucide-react";
-import { Motive, VisitFormatted } from "~/types/visits.types";
+import { VisitFormatted } from "~/types/visits.types";
 import { useLoaderData } from "@remix-run/react";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Button } from "../ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
+import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
-import { Calendar } from "../ui/calendar";
+import { Calendar } from "~/components/ui/calendar";
 import { useState } from "react";
 
 interface GeneralVisitDataSectionProps {
@@ -43,7 +43,7 @@ export default function GeneralVisitDataSection({
         <CalendarIcon className="text-gray-600 w-5" />
         <p className="font-bold text-xl text-gray-600">Información de Visita</p>
       </div>
-      <div className="space-y-3">
+      <div>
         <div className="flex justify-between gap-4">
           <div className="space-y-1 w-full">
             <Label>Tipo de visita</Label>
@@ -53,6 +53,7 @@ export default function GeneralVisitDataSection({
               onValueChange={(visitType) =>
                 handleChange("visit_type", visitType)
               }
+              name="visit_type"
             >
               <SelectTrigger>
                 <SelectValue placeholder="Tipo de visita" />
@@ -77,6 +78,7 @@ export default function GeneralVisitDataSection({
                     handleChange("motive_id", motiveId.toString())
                   }
                   disabled={showMode && !editMode}
+                  name="motive_id"
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona un Motivo" />
@@ -102,6 +104,7 @@ export default function GeneralVisitDataSection({
                   onValueChange={(serviceId) =>
                     handleChange("service_id", serviceId.toString())
                   }
+                  name="service_id"
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona un servicio" />
@@ -117,10 +120,11 @@ export default function GeneralVisitDataSection({
                   </SelectContent>
                 </Select>
               )}
+            <div className="min-h-[16px]"></div>
           </div>
         </div>
         {showMode && (
-          <div className="flex justify-between gap-x-4 space-y-3 md:space-y-0">
+          <div className="flex justify-between gap-x-4">
             <div className="space-y-1 w-full">
               {editMode ? (
                 <Popover
@@ -184,6 +188,7 @@ export default function GeneralVisitDataSection({
                       initialFocus
                     />
                   </PopoverContent>
+                  <div className="min-h-[16px]"></div>
                 </Popover>
               ) : (
                 <>
@@ -197,6 +202,7 @@ export default function GeneralVisitDataSection({
                         : `${visitData.date_entry_formatted} - ${visitData.time_entry}`
                     }
                   />
+                  <div className="min-h-[16px]"></div>
                 </>
               )}
             </div>
@@ -206,7 +212,7 @@ export default function GeneralVisitDataSection({
                   open={isPopoverDateExitOpen}
                   onOpenChange={setIsPopoverDateExitOpen}
                 >
-                  <Label>F. Entrada</Label>
+                  <Label>F. Salida</Label>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -263,6 +269,7 @@ export default function GeneralVisitDataSection({
                       initialFocus
                     />
                   </PopoverContent>
+                  <div className="min-h-[16px]"></div>
                 </Popover>
               ) : (
                 <>
@@ -276,6 +283,7 @@ export default function GeneralVisitDataSection({
                         : `${visitData.date_exit_formatted} - ${visitData.time_exit}`
                     }
                   />
+                  <div className="min-h-[16px]"></div>
                 </>
               )}
             </div>
@@ -289,8 +297,10 @@ export default function GeneralVisitDataSection({
                 type="time"
                 disabled={showMode && !editMode}
                 value={visitData.time_entry}
+                name="time_entry"
                 onChange={(e) => handleChange("time_entry", e.target.value)}
               />
+              <div className="min-h-[16px]"></div>
             </div>
             <div className="space-y-1 w-full">
               <Label>Hora salida</Label>
@@ -298,8 +308,10 @@ export default function GeneralVisitDataSection({
                 type="time"
                 disabled={showMode && !editMode}
                 value={visitData.time_exit ?? ""}
+                name="time_exit"
                 onChange={(e) => handleChange("time_exit", e.target.value)}
               ></Input>
+              <div className="min-h-[16px]"></div>
             </div>
           </div>
         )}
@@ -314,6 +326,7 @@ export default function GeneralVisitDataSection({
               disabled={showMode && !editMode}
               value={visitData.custom_motive ?? ""}
               onChange={(e) => handleChange("custom_motive", e.target.value)}
+              name="description_motive"
               placeholder={
                 visitData.custom_motive == "" && editMode == true
                   ? "Describe el motivo..."
@@ -325,6 +338,7 @@ export default function GeneralVisitDataSection({
               disabled={showMode && !editMode}
               value={visitData.task ?? ""}
               onChange={(e) => handleChange("task", e.target.value)}
+              name="description_task"
               placeholder={
                 visitData?.task == "" && editMode == true
                   ? "Describe la tarea a realizar..."
@@ -332,6 +346,7 @@ export default function GeneralVisitDataSection({
               }
             />
           )}
+          <div className="min-h-[16px]"></div>
         </div>
       </div>
     </div>

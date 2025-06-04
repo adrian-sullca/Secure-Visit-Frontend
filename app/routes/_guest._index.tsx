@@ -3,7 +3,7 @@ import {
   type LoaderFunction,
   type MetaFunction,
 } from "@remix-run/node";
-import { Button } from "../components/ui/button";
+import { Button } from "~/components/ui/button";
 import { sessionStorage } from "~/server/auth.server";
 
 export const meta: MetaFunction = () => {

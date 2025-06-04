@@ -1,9 +1,10 @@
 import { ValidationErrors } from "../types/general.types";
 import { LoginFormData, RegisterFormData } from "../types/auth.types";
-
-const NAME_REGEX = /^[a-zA-Z\s]+$/;
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[\W_]).{6,}$/;
+import {
+  REGEX_NAME_SURNAME,
+  REGEX_EMAIL,
+  REGEX_PASSWORD,
+} from "./../utils/regex";
 
 export function validateLoginFormData(
   formData: LoginFormData
@@ -12,7 +13,7 @@ export function validateLoginFormData(
 
   if (!formData.email) {
     validationErrors.email = "Email is required";
-  } else if (!EMAIL_REGEX.test(formData.email)) {
+  } else if (!REGEX_EMAIL.test(formData.email)) {
     validationErrors.email = "Email is invalid";
   }
 
@@ -30,19 +31,19 @@ export function validateRegisterFormData(
 
   if (!formData.name) {
     validationErrors.name = "Name are required";
-  } else if (!NAME_REGEX.test(formData.name)) {
+  } else if (!REGEX_NAME_SURNAME.test(formData.name)) {
     validationErrors.name = "Name should only contain letters";
   }
 
   if (!formData.email) {
     validationErrors.email = "Email is required";
-  } else if (!EMAIL_REGEX.test(formData.email)) {
+  } else if (!REGEX_EMAIL.test(formData.email)) {
     validationErrors.email = "Email is invalid";
   }
 
   if (!formData.password) {
     validationErrors.password = "Password is required";
-  } else if (!PASSWORD_REGEX.test(formData.password)) {
+  } else if (!REGEX_PASSWORD.test(formData.password)) {
     validationErrors.password =
       "The password needs to meet the complexity requirements";
   }

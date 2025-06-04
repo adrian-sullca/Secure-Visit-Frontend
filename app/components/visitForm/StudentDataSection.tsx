@@ -1,8 +1,8 @@
 import { User } from "lucide-react";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
+import { Label } from "~/components/ui/label";
+import { Input } from "~/components/ui/input";
 import { VisitFormatted } from "~/types/visits.types";
-import { useLoaderData } from "@remix-run/react";
+import { FetcherWithComponents, useLoaderData } from "@remix-run/react";
 import {
   Select,
   SelectContent,
@@ -10,12 +10,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { cn } from "~/lib/utils";
 
 interface StudentDataSectionProps {
   showMode: boolean;
   editMode: boolean;
   visitData: VisitFormatted;
   handleChange: (field: string, value: string) => void;
+  fetcherAddOrUpdate: FetcherWithComponents<any>;
 }
 
 export default function StudentDataSection({
@@ -23,9 +25,12 @@ export default function StudentDataSection({
   editMode,
   visitData,
   handleChange,
+  fetcherAddOrUpdate,
 }: StudentDataSectionProps) {
   const loaderData =
     useLoaderData<typeof import("./../../routes/_auth.visits").loader>();
+
+  const errors = fetcherAddOrUpdate.data?.clientSideValidationErrors || {};
 
   return (
     <div className="p-5 border rounded-lg w-full">
@@ -35,7 +40,7 @@ export default function StudentDataSection({
           Información de Estudiante
         </p>
       </div>
-      <div className="space-y-3">
+      <div>
         <div className="space-y-1">
           <Label>Nombre</Label>
           <Input
@@ -43,7 +48,18 @@ export default function StudentDataSection({
             disabled={showMode && !editMode}
             value={visitData.student_name ? visitData.student_name : ""}
             onChange={(e) => handleChange("student_name", e.target.value)}
+            name="student_name"
+            className={cn(
+              "input",
+              errors.studentName &&
+                "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
+            )}
           ></Input>
+          <div className="min-h-[16px]">
+            {errors.studentName && (
+              <p className="text-xs text-red-600 mt-1">{errors.studentName}</p>
+            )}
+          </div>
         </div>
         <div className="space-y-1">
           <Label>Apellido</Label>
@@ -51,7 +67,20 @@ export default function StudentDataSection({
             disabled={showMode && !editMode}
             value={visitData.student_surname ? visitData.student_surname : ""}
             onChange={(e) => handleChange("student_surname", e.target.value)}
+            name="student_surname"
+            className={cn(
+              "input",
+              errors.studentSurname &&
+                "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
+            )}
           ></Input>
+          <div className="min-h-[16px]">
+            {errors.studentSurname && (
+              <p className="text-xs text-red-600 mt-1">
+                {errors.studentSurname}
+              </p>
+            )}
+          </div>
         </div>
         <div className="space-y-1">
           <Label>Curso</Label>
@@ -62,8 +91,15 @@ export default function StudentDataSection({
                 handleChange("student_course", cursoName)
               }
               disabled={showMode && !editMode}
+              name="student_course"
             >
-              <SelectTrigger>
+              <SelectTrigger
+                className={cn(
+                  "input",
+                  errors.studentCourse &&
+                    "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                )}
+              >
                 <SelectValue placeholder="Selecciona el curso del estudiante" />
               </SelectTrigger>
               <SelectContent>
@@ -75,6 +111,13 @@ export default function StudentDataSection({
               </SelectContent>
             </Select>
           )}
+          <div className="min-h-[16px]">
+            {errors.studentCourse && (
+              <p className="text-xs text-red-600 mt-1">
+                {errors.studentCourse}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>

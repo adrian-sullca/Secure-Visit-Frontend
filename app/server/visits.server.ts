@@ -1,5 +1,11 @@
-import { Visits, VisitFilters } from "./../types/visits.types";
-import axiosInstance from "./../config/axios.config";
+import {
+  Visits,
+  VisitFilters,
+  FormDataAddFamilyVisit,
+  FormDataAddProfessionalVisit,
+} from "~/types/visits.types";
+import axiosInstance from "~/config/axios.config";
+import { isAxiosError } from "axios";
 
 export async function getAllVisits(authToken: string, filters?: VisitFilters) {
   try {
@@ -9,6 +15,7 @@ export async function getAllVisits(authToken: string, filters?: VisitFilters) {
     params.set("page", filters?.page || "1");
 
     const filterMappings = {
+      visitState: "visit_state",
       visitType: "visit_type",
       visitName: "visit_name",
       visitSurname: "visit_surname",
@@ -66,6 +73,106 @@ export async function getAllVisits(authToken: string, filters?: VisitFilters) {
   }
 }
 
+export async function createFamilyVisit(
+  authToken: string,
+  familyVisit: FormDataAddFamilyVisit
+) {
+  try {
+    const familyVisitMap = {
+      visit_type: "family",
+      name: familyVisit.visitName,
+      surname: familyVisit.visitSurname,
+      email: familyVisit.visitEmail,
+      student_name: familyVisit.studentName,
+      student_surname: familyVisit.studentSurname,
+      student_course: familyVisit.studentCourse,
+      motive_id: familyVisit.motiveId,
+      custom_motive: familyVisit.motiveDescription,
+    };
+
+    const response = await axiosInstance.post("/entry", familyVisitMap, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+
+    if (response.status == 201) {
+      console.log(response.data);
+    }
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error("Mensaje del backend:", error.response?.data?.message);
+
+      if (error.response?.data?.errors) {
+        console.error("Errores de validación:", error.response.data.errors);
+      }
+    } else {
+      console.error("Error desconocido:", error);
+    }
+  }
+}
+
+export async function createProfessionalVisit(
+  authToken: string,
+  professionalVisit: FormDataAddProfessionalVisit
+) {
+  try {
+    const professionalVisitMap = {
+      visit_type: "professional",
+      name: professionalVisit.visitName,
+      surname: professionalVisit.visitSurname,
+      email: professionalVisit.visitEmail,
+      NIF: professionalVisit.professionalNIF,
+      age: professionalVisit.professionalAge,
+      task: professionalVisit.taskDescription,
+      service_id: professionalVisit.serviceId,
+      CIF: professionalVisit.companyCIF,
+      company_name: professionalVisit.companyName,
+      company_telephone: professionalVisit.companyTelephone,
+    };
+
+    const response = await axiosInstance.post("/entry", professionalVisitMap, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+
+    if (response.status == 201) {
+      console.log(response.data);
+    }
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error("Mensaje del backend:", error.response?.data?.message);
+
+      if (error.response?.data?.errors) {
+        console.error("Errores de validación:", error.response.data.errors);
+      }
+    } else {
+      console.error("Error desconocido:", error);
+    }
+  }
+}
+
+export async function markExitVisit(authToken: string, entryId: number) {
+  try {
+    const response = await axiosInstance.post(
+      `/exit/${entryId}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      }
+    );
+
+    if (response.status == 201) {
+      console.log(response.data);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 function formatVisitData(visits: Visits[]) {
   return visits.map((visit) => {
     const [dateEntryValue, timeEntryRaw] = visit.date_entry?.split(" ") ?? [
@@ -86,6 +193,7 @@ function formatVisitData(visits: Visits[]) {
     const family = visit.visit?.family_visit;
     const professional = visit.visit?.professional_visit;
     const company = professional?.company;
+    const professionalService = visit.professional_service;
 
     return {
       id: visit.id,
@@ -117,9 +225,11 @@ function formatVisitData(visits: Visits[]) {
       company_id: professional?.company_id ?? null,
       NIF: professional?.NIF ?? null,
       age: professional?.age ?? null,
-      service_id: professional?.service?.id ?? null,
-      service_name: professional?.service?.name ?? null,
-      task: professional?.task ?? null,
+
+      // Professional Service Data (nuevo)
+      service_id: professionalService?.service_id ?? null,
+      service_name: professionalService?.service?.name ?? null,
+      task: professionalService?.task ?? null,
 
       // Company Data
       company_CIF: company?.CIF ?? null,
