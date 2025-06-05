@@ -5,7 +5,7 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import VisitsTable from "~/components/visits/VisitsTable";
-import { requireAuth } from "~/server/auth.server";
+import { getUserByToken, requireAuth } from "~/server/auth.server";
 import { getAllMotives } from "~/server/motives.server";
 import { getAllServices } from "~/server/service.server";
 import {
@@ -33,12 +33,14 @@ export const meta: MetaFunction = () => {
 
 export const loader: LoaderFunction = async ({ request }) => {
   const authToken = await requireAuth(request);
+  const user = await getUserByToken(request);
   const resGetAllVisits = await getAllVisits(authToken);
   const resGetAllMotives = await getAllMotives(authToken);
   const resGetAllServices = await getAllServices(authToken);
   const courses = ["1 ESO", "2 ESO", "3 ESO", "4 ESO"]; // TODO: Obtener de base de datos
   console.log("data formateada", resGetAllVisits?.visits);
   return json({
+    user: user, 
     courses: courses,
     motives: resGetAllMotives?.motives,
     services: resGetAllServices?.services,

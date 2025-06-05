@@ -78,8 +78,14 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "~/components/ui/pagination";
+import { exportToExcel, exportToPDF } from "./ExportData";
+import { User } from "~/types/user.types";
 
-export default function VisitsTable() {
+interface VisitsTableProps {
+  user: User;
+}
+
+export default function VisitsTable({ user }: VisitsTableProps) {
   const loaderData =
     useLoaderData<typeof import("./../../routes/_auth.visits").loader>();
 
@@ -339,7 +345,6 @@ export default function VisitsTable() {
               </Select>
             </div>
             <div className="flex gap-2 flex-col xsm:flex-row">
-              {/* TODO: EXPORTAR DATOS EN PDF O EXCEL */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="w-full">
@@ -348,8 +353,8 @@ export default function VisitsTable() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem>Descargar PDF</DropdownMenuItem>
-                  <DropdownMenuItem>Descargar EXCEL</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => exportToPDF(visits, loaderData.user)}>Descargar PDF</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => exportToExcel(visits, loaderData.user)}>Descargar EXCEL</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <Button
