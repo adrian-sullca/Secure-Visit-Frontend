@@ -13,6 +13,7 @@ export interface FamilyVisit {
 export interface Motive {
   id: number;
   name: string;
+  enabled: boolean;
 }
 
 export interface Service {

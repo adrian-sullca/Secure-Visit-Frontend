@@ -52,9 +52,9 @@ export default function AuthHeader() {
             <DropdownMenuContent className="w-56" side="bottom" align="end">
               <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Link to="/logout">Cerrar sesión</Link>
-              </DropdownMenuItem>
+              <Link to="/logout">
+                <DropdownMenuItem>Cerrar sesión</DropdownMenuItem>
+              </Link>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

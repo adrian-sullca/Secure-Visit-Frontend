@@ -14,10 +14,9 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function Index() {
-  const { user } = useLoaderData<typeof loader>();
   return (
     <>
-      <AuthHeader user={user} />
+      <AuthHeader/>
       <main className="pt-28 pb-14 px-4 min-h-screen bg-[#f7f9fb]">
         <Outlet />
       </main>

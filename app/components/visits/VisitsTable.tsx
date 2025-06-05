@@ -81,11 +81,7 @@ import {
 import { exportToExcel, exportToPDF } from "./ExportData";
 import { User } from "~/types/user.types";
 
-interface VisitsTableProps {
-  user: User;
-}
-
-export default function VisitsTable({ user }: VisitsTableProps) {
+export default function VisitsTable() {
   const loaderData =
     useLoaderData<typeof import("./../../routes/_auth.visits").loader>();
 
