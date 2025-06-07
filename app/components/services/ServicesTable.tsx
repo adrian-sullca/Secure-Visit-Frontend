@@ -39,7 +39,7 @@ import {
   useFetcher,
   useLoaderData,
 } from "@remix-run/react";
-import { Motive } from "~/types/motives.types";
+import { Service } from "~/types/services.types";
 import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
 import {
@@ -56,7 +56,7 @@ import { Label } from "../ui/label";
 import { cn } from "~/lib/utils";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { loader } from "~/routes/_admin.admin.motives";
+import { loader } from "~/routes/_admin.admin.services";
 interface FetcherEnableOrDisableData {
   success: boolean;
   message: string;
@@ -72,29 +72,29 @@ interface ActionData {
   };
 }
 
-export default function MotivesTable() {
-  const { motives } = useLoaderData<typeof loader>();
+export default function ServicesTable() {
+  const { services } = useLoaderData<typeof loader>();
   const actionData = useActionData<ActionData>();
 
-  const [isAddModalOpen, setIsAddMoalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [formErrors, setFormErrors] = useState<{
     name?: string;
     enabled?: string;
   } | null>(null);
-  const [selectedMotive, setSelectedMotive] = useState<Motive | null>(null);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
   const fetcherEnableOrDisable = useFetcher<FetcherEnableOrDisableData>();
   const [statusFilter, setStatusFilter] = useState<
     "all" | "active" | "inactive"
   >("all");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredMotives = motives.filter((motive: Motive) => {
-    if (statusFilter === "active" && !motive.enabled) return false;
-    if (statusFilter === "inactive" && motive.enabled) return false;
+  const filteredServices = services.filter((service: Service) => {
+    if (statusFilter === "active" && !service.enabled) return false;
+    if (statusFilter === "inactive" && service.enabled) return false;
 
     if (
       searchTerm.trim() !== "" &&
-      !motive.name.toLowerCase().includes(searchTerm.toLowerCase())
+      !service.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
       return false;
 
@@ -103,7 +103,7 @@ export default function MotivesTable() {
 
   const getStatusBadge = (status: boolean) => {
     if (status == true) {
-      return <Badge className="bg-green-500 hover:bg-green-600">Activa</Badge>;
+      return <Badge className="bg-green-500 hover:bg-green-600">Activo</Badge>;
     }
     return <Badge variant="secondary">Inactivo</Badge>;
   };
@@ -123,8 +123,8 @@ export default function MotivesTable() {
 
     if (actionData.success && actionData.message) {
       toast.success(actionData.message);
-      setIsAddMoalOpen(false);
-      setSelectedMotive(null);
+      setIsAddModalOpen(false);
+      setSelectedService(null);
     } else if (actionData.message && actionData.clientSideValidationErrors) {
       setFormErrors(actionData.clientSideValidationErrors);
       toast.error(actionData.message);
@@ -136,32 +136,32 @@ export default function MotivesTable() {
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <CardTitle className="text-left">Gestion de Motivos</CardTitle>
+            <CardTitle className="text-left">Gestion de Servicios</CardTitle>
             <CardDescription className="text-left">
-              Gestiona los motivos de la aplicación
+              Gestiona los servicios de la aplicación
             </CardDescription>
           </div>
           <div>
             <Dialog
               open={isAddModalOpen}
               onOpenChange={(isOpen) => {
-                setIsAddMoalOpen(isOpen);
+                setIsAddModalOpen(isOpen);
                 if (!isOpen) {
                   setFormErrors(null);
                 }
               }}
             >
               <DialogTrigger asChild>
-                <Button onClick={() => setIsAddMoalOpen(true)}>
+                <Button onClick={() => setIsAddModalOpen(true)}>
                   <Plus />
-                  <span className="ml-1">Añadir motivo</span>
+                  <span className="ml-1">Añadir servicio</span>
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle className="text-xl">Añadir motivo</DialogTitle>
+                  <DialogTitle className="text-xl">Añadir servicio</DialogTitle>
                   <DialogDescription>
-                    Añade un motivo para las visitas familiares
+                    Añade un servicio para las visitas profesionales
                   </DialogDescription>
                 </DialogHeader>
                 <Form method="post">
@@ -169,7 +169,7 @@ export default function MotivesTable() {
                   <div className="space-y-1">
                     <Label>Nombre</Label>
                     <Input
-                      name="motive_name"
+                      name="service_name"
                       className={cn(
                         "input",
                         formErrors?.name &&
@@ -202,7 +202,7 @@ export default function MotivesTable() {
             <div className="relative w-full">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Buscar motivos..."
+                placeholder="Buscar servicios..."
                 className="pl-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -214,7 +214,7 @@ export default function MotivesTable() {
                 setStatusFilter(value as "all" | "active" | "inactive")
               }
             >
-              <SelectTrigger className="sm:max-w-[155px]">
+              <SelectTrigger className="sm:max-w-[162px]">
                 <SelectValue placeholder="Todos" />
               </SelectTrigger>
               <SelectContent>
@@ -239,21 +239,21 @@ export default function MotivesTable() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredMotives.map((motive: Motive) => (
-                  <TableRow key={motive.id} className="text-sm">
-                    <TableCell className="w-16">{motive.id}</TableCell>
+                {filteredServices.map((service: Service) => (
+                  <TableRow key={service.id} className="text-sm">
+                    <TableCell className="w-16">{service.id}</TableCell>
                     <TableCell className="max-w-[160px] truncate">
-                      {motive.name}
+                      {service.name}
                     </TableCell>
                     <TableCell className="w-28">
-                      {getStatusBadge(motive.enabled)}
+                      {getStatusBadge(service.enabled)}
                     </TableCell>
                     <TableCell className="text-right w-32">
                       <div className="flex justify-end space-x-2">
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="outline" size="sm">
-                              {motive.enabled ? (
+                              {service.enabled ? (
                                 <Trash2 className="h-4 w-4" />
                               ) : (
                                 <Check className="h-4 w-4" />
@@ -263,14 +263,14 @@ export default function MotivesTable() {
                           <AlertDialogContent>
                             <AlertDialogHeader>
                               <AlertDialogTitle>
-                                {motive.enabled
-                                  ? `¿Eliminar el motivo "${motive.name}"?`
-                                  : `¿Habilitar el motivo "${motive.name}"?`}
+                                {service.enabled
+                                  ? `¿Eliminar el servicio "${service.name}"?`
+                                  : `¿Habilitar el servicio "${service.name}"?`}
                               </AlertDialogTitle>
                               <AlertDialogDescription>
-                                {motive.enabled
-                                  ? "¿Estás seguro de eliminar este motivo? Se deshabilitará y no será visible para los usuarios."
-                                  : "¿Estás seguro de habilitar este motivo? Se habilitará y será visible para los usuarios."}
+                                {service.enabled
+                                  ? "¿Estás seguro de eliminar este servicio? Se deshabilitará y no será visible para los usuarios."
+                                  : "¿Estás seguro de habilitar este servicio? Se habilitará y será visible para los usuarios."}
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -278,13 +278,13 @@ export default function MotivesTable() {
                               <fetcherEnableOrDisable.Form method="post">
                                 <input
                                   type="hidden"
-                                  name="motive_id"
-                                  value={motive.id}
+                                  name="service_id"
+                                  value={service.id}
                                 />
                                 <input
                                   type="hidden"
                                   name="intent"
-                                  value={motive.enabled ? "disable" : "enable"}
+                                  value={service.enabled ? "disable" : "enable"}
                                 />
                                 <AlertDialogAction
                                   type="submit"
@@ -294,10 +294,10 @@ export default function MotivesTable() {
                                   }
                                 >
                                   {fetcherEnableOrDisable.state === "submitting"
-                                    ? motive.enabled
+                                    ? service.enabled
                                       ? "Deshabilitando..."
                                       : "Habilitando..."
-                                    : motive.enabled
+                                    : service.enabled
                                     ? "Deshabilitar"
                                     : "Habilitar"}
                                 </AlertDialogAction>
@@ -309,7 +309,7 @@ export default function MotivesTable() {
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            setSelectedMotive(motive);
+                            setSelectedService(service);
                           }}
                         >
                           <Edit className="h-4 w-4" />
@@ -324,10 +324,10 @@ export default function MotivesTable() {
         </div>
       </CardContent>
       <Dialog
-        open={!!selectedMotive}
+        open={!!selectedService}
         onOpenChange={(isOpen) => {
           if (!isOpen) {
-            setSelectedMotive(null);
+            setSelectedService(null);
             setFormErrors(null);
           }
         }}
@@ -335,19 +335,24 @@ export default function MotivesTable() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="text-xl">
-              {selectedMotive && `Detalles del motivo "${selectedMotive.name}"`}
+              {selectedService &&
+                `Detalles del servicio "${selectedService.name}"`}
             </DialogTitle>
-            <DialogDescription>Actualiza un motivo</DialogDescription>
+            <DialogDescription>Actualiza un servicio</DialogDescription>
           </DialogHeader>
-          {selectedMotive && (
+          {selectedService && (
             <Form method="patch" className="text-black">
               <input type="hidden" name="intent" value="update" />
-              <input type="hidden" name="motive_id" value={selectedMotive.id} />
+              <input
+                type="hidden"
+                name="service_id"
+                value={selectedService.id}
+              />
               <div className="space-y-1">
                 <Label>Nombre</Label>
                 <Input
-                  name="motive_name"
-                  defaultValue={selectedMotive.name}
+                  name="service_name"
+                  defaultValue={selectedService.name}
                   className={cn(
                     "input",
                     formErrors?.name &&
@@ -365,8 +370,8 @@ export default function MotivesTable() {
               <div className="space-y-1">
                 <Label>Estado</Label>
                 <Select
-                  defaultValue={selectedMotive.enabled ? "1" : "0"}
-                  name="motive_enabled"
+                  defaultValue={selectedService.enabled ? "1" : "0"}
+                  name="service_enabled"
                 >
                   <SelectTrigger
                     className={cn(

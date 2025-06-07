@@ -7,7 +7,7 @@ import {
 import VisitsTable from "~/components/visits/VisitsTable";
 import { getUserByToken, requireAuth } from "~/server/auth.server";
 import { getAllMotives } from "~/server/motives.server";
-import { getAllServices } from "~/server/service.server";
+import { getAllServices } from "~/server/services.server";
 import {
   createFamilyVisit,
   createProfessionalVisit,

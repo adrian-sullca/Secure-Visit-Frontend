@@ -1,3 +1,6 @@
+import { Motive } from "./motives.types";
+import { Service } from "./services.types";
+
 export interface FamilyVisit {
   id: number;
   visit_id: number;
@@ -8,17 +11,6 @@ export interface FamilyVisit {
   custom_motive: string;
   created_at: string;
   updated_at: string;
-}
-
-export interface Motive {
-  id: number;
-  name: string;
-  enabled: boolean;
-}
-
-export interface Service {
-  id: number;
-  name: string;
 }
 
 export interface Company {
