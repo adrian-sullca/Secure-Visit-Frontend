@@ -57,6 +57,10 @@ import { cn } from "~/lib/utils";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { loader } from "~/routes/_admin.admin.dashboard.services";
+import { User } from "~/types/user.types";
+import { action } from "~/routes/_guest.auth";
+import { Company } from "~/types/companies.types";
+
 interface FetcherEnableOrDisableData {
   success: boolean;
   message: string;
@@ -67,34 +71,42 @@ interface ActionData {
   intent: string;
   message?: string;
   clientSideValidationErrors?: {
+    CIF?: string;
     name?: string;
-    enabled?: string;
+    telephone?: string;
+    enabled?: boolean;
+  };
+  serverSideValidationErrors?: {
+    CIF?: string;
+    telephone?: string;
   };
 }
 
-export default function ServicesTable() {
-  const { services } = useLoaderData<typeof loader>();
+export default function CompaniesTable() {
+  const { companies } = useLoaderData<typeof loader>();
   const actionData = useActionData<ActionData>();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [formErrors, setFormErrors] = useState<{
+    CIF?: string;
     name?: string;
-    enabled?: string;
+    telephone?: string;
+    enabled?: boolean;
   } | null>(null);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const fetcherEnableOrDisable = useFetcher<FetcherEnableOrDisableData>();
   const [statusFilter, setStatusFilter] = useState<
     "all" | "active" | "inactive"
   >("all");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredServices = services.filter((service: Service) => {
-    if (statusFilter === "active" && !service.enabled) return false;
-    if (statusFilter === "inactive" && service.enabled) return false;
+  const filteredCompanies = companies.filter((company: Company) => {
+    if (statusFilter === "active" && !company.enabled) return false;
+    if (statusFilter === "inactive" && company.enabled) return false;
 
     if (
       searchTerm.trim() !== "" &&
-      !service.name.toLowerCase().includes(searchTerm.toLowerCase())
+      !company.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
       return false;
 
@@ -125,9 +137,12 @@ export default function ServicesTable() {
     if (actionData.success && actionData.message) {
       toast.success(actionData.message);
       setIsAddModalOpen(false);
-      setSelectedService(null);
+      setSelectedCompany(null);
     } else if (actionData.message && actionData.clientSideValidationErrors) {
       setFormErrors(actionData.clientSideValidationErrors);
+      toast.error(actionData.message);
+    } else if (actionData.message && actionData.serverSideValidationErrors) {
+      setFormErrors(actionData.serverSideValidationErrors);
       toast.error(actionData.message);
     }
   }, [actionData]);
@@ -137,9 +152,11 @@ export default function ServicesTable() {
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <CardTitle className="text-left">Gestion de Servicios</CardTitle>
+            <CardTitle className="text-left">
+              Gestion de Empresas de Profesionales
+            </CardTitle>
             <CardDescription className="text-left">
-              Gestiona los servicios de la aplicación
+              Gestiona las empresas de la aplicación
             </CardDescription>
           </div>
           <div>
@@ -155,14 +172,14 @@ export default function ServicesTable() {
               <DialogTrigger asChild>
                 <Button onClick={() => setIsAddModalOpen(true)}>
                   <Plus />
-                  <span className="ml-1">Añadir servicio</span>
+                  <span className="ml-1">Añadir empresa</span>
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle className="text-xl">Añadir servicio</DialogTitle>
+                  <DialogTitle className="text-xl">Añadir empresa</DialogTitle>
                   <DialogDescription>
-                    Añade un servicio para las visitas profesionales
+                    Añade una empresa para las visitas profesionales
                   </DialogDescription>
                 </DialogHeader>
                 <Form method="post">
@@ -170,7 +187,7 @@ export default function ServicesTable() {
                   <div className="space-y-1">
                     <Label>Nombre</Label>
                     <Input
-                      name="service_name"
+                      name="company_name"
                       className={cn(
                         "input",
                         formErrors?.name &&
@@ -185,9 +202,45 @@ export default function ServicesTable() {
                       )}
                     </div>
                   </div>
+                  <div className="space-y-1">
+                    <Label>CIF</Label>
+                    <Input
+                      name="company_CIF"
+                      className={cn(
+                        "input",
+                        formErrors?.CIF &&
+                          "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
+                      )}
+                    />
+                    <div className="min-h-[16px]">
+                      {formErrors?.CIF && (
+                        <p className="text-xs text-red-600 mt-1">
+                          {formErrors.name}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Telefono</Label>
+                    <Input
+                      name="company_telephone"
+                      className={cn(
+                        "input",
+                        formErrors?.telephone &&
+                          "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
+                      )}
+                    />
+                    <div className="min-h-[16px]">
+                      {formErrors?.telephone && (
+                        <p className="text-xs text-red-600 mt-1">
+                          {formErrors.telephone}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                   <DialogFooter className="mt-2 flex gap-2 sm:gap-0">
                     <DialogClose asChild>
-                      <Button variant="outline">Cancel</Button>
+                      <Button variant="outline">Cancelar</Button>
                     </DialogClose>
                     <Button type="submit">Añadir</Button>
                   </DialogFooter>
@@ -203,7 +256,7 @@ export default function ServicesTable() {
             <div className="relative w-full">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Buscar servicios..."
+                placeholder="Buscar empresas por nombre..."
                 className="pl-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -234,27 +287,35 @@ export default function ServicesTable() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-16">Id</TableHead>
-                  <TableHead className="max-w-[160px]">Nombre</TableHead>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>CIF</TableHead>
+                  <TableHead>Telefono</TableHead>
                   <TableHead className="w-28">Estado</TableHead>
                   <TableHead className="text-right w-32">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredServices.map((service: Service) => (
-                  <TableRow key={service.id} className="text-sm">
-                    <TableCell className="w-16">{service.id}</TableCell>
+                {filteredCompanies.map((company: Company) => (
+                  <TableRow key={company.id} className="text-sm">
+                    <TableCell className="w-16">{company.id}</TableCell>
                     <TableCell className="max-w-[160px] truncate">
-                      {service.name}
+                      {company.name}
+                    </TableCell>
+                    <TableCell className="max-w-[160px] truncate">
+                      {company.CIF}
+                    </TableCell>
+                    <TableCell className="max-w-[160px] truncate">
+                      {company.telephone}
                     </TableCell>
                     <TableCell className="w-28">
-                      {getStatusBadge(service.enabled)}
+                      {getStatusBadge(company.enabled)}
                     </TableCell>
                     <TableCell className="text-right w-32">
                       <div className="flex justify-end space-x-2">
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="outline" size="sm">
-                              {service.enabled ? (
+                              {company.enabled ? (
                                 <Trash2 className="h-4 w-4" />
                               ) : (
                                 <Check className="h-4 w-4" />
@@ -264,14 +325,14 @@ export default function ServicesTable() {
                           <AlertDialogContent>
                             <AlertDialogHeader>
                               <AlertDialogTitle>
-                                {service.enabled
-                                  ? `¿Eliminar el servicio "${service.name}"?`
-                                  : `¿Habilitar el servicio "${service.name}"?`}
+                                {company.enabled
+                                  ? `¿Deshabilitar la empresa "${company.name}"?`
+                                  : `¿Habilitar la empresa "${company.name}"?`}
                               </AlertDialogTitle>
                               <AlertDialogDescription>
-                                {service.enabled
-                                  ? "¿Estás seguro de eliminar este servicio? Se deshabilitará y no será visible para los usuarios."
-                                  : "¿Estás seguro de habilitar este servicio? Se habilitará y será visible para los usuarios."}
+                                {company.enabled
+                                  ? "¿Estás seguro de deshabilitar esta empresa? Se deshabilitará y no sera visible para las visitas profesionales."
+                                  : "¿Estás seguro de habilitar esta empresa?."}
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -279,13 +340,13 @@ export default function ServicesTable() {
                               <fetcherEnableOrDisable.Form method="post">
                                 <input
                                   type="hidden"
-                                  name="service_id"
-                                  value={service.id}
+                                  name="company_id"
+                                  value={company.id}
                                 />
                                 <input
                                   type="hidden"
                                   name="intent"
-                                  value={service.enabled ? "disable" : "enable"}
+                                  value={company.enabled ? "disable" : "enable"}
                                 />
                                 <AlertDialogAction
                                   type="submit"
@@ -295,10 +356,10 @@ export default function ServicesTable() {
                                   }
                                 >
                                   {fetcherEnableOrDisable.state === "submitting"
-                                    ? service.enabled
+                                    ? company.enabled
                                       ? "Deshabilitando..."
                                       : "Habilitando..."
-                                    : service.enabled
+                                    : company.enabled
                                     ? "Deshabilitar"
                                     : "Habilitar"}
                                 </AlertDialogAction>
@@ -310,7 +371,7 @@ export default function ServicesTable() {
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            setSelectedService(service);
+                            setSelectedCompany(company);
                           }}
                         >
                           <Edit className="h-4 w-4" />
@@ -325,10 +386,10 @@ export default function ServicesTable() {
         </div>
       </CardContent>
       <Dialog
-        open={!!selectedService}
+        open={!!selectedCompany}
         onOpenChange={(isOpen) => {
           if (!isOpen) {
-            setSelectedService(null);
+            setSelectedCompany(null);
             setFormErrors(null);
           }
         }}
@@ -336,24 +397,22 @@ export default function ServicesTable() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="text-xl">
-              {selectedService &&
-                `Detalles del servicio "${selectedService.name}"`}
+              {selectedCompany &&
+                `Detalles de la empresa "${selectedCompany.name}"`}
             </DialogTitle>
-            <DialogDescription>Actualiza un servicio</DialogDescription>
+            <DialogDescription>
+              Actualiza los datos de la empresa
+            </DialogDescription>
           </DialogHeader>
-          {selectedService && (
+          {selectedCompany && (
             <Form method="patch" className="text-black">
               <input type="hidden" name="intent" value="update" />
-              <input
-                type="hidden"
-                name="service_id"
-                value={selectedService.id}
-              />
+              <input type="hidden" name="company_id" value={selectedCompany.id} />
               <div className="space-y-1">
                 <Label>Nombre</Label>
                 <Input
-                  name="service_name"
-                  defaultValue={selectedService.name}
+                  name="company_name"
+                  defaultValue={selectedCompany.name}
                   className={cn(
                     "input",
                     formErrors?.name &&
@@ -369,10 +428,48 @@ export default function ServicesTable() {
                 </div>
               </div>
               <div className="space-y-1">
+                <Label>CIF</Label>
+                <Input
+                  name="company_CIF"
+                  defaultValue={selectedCompany.CIF}
+                  className={cn(
+                    "input",
+                    formErrors?.CIF &&
+                      "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
+                  )}
+                />
+                <div className="min-h-[16px]">
+                  {formErrors?.CIF && (
+                    <p className="text-xs text-red-600 mt-1">
+                      {formErrors.CIF}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label>Telefono</Label>
+                <Input
+                  name="company_telephone"
+                  defaultValue={selectedCompany.telephone}
+                  className={cn(
+                    "input",
+                    formErrors?.telephone &&
+                      "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
+                  )}
+                />
+                <div className="min-h-[16px]">
+                  {formErrors?.telephone && (
+                    <p className="text-xs text-red-600 mt-1">
+                      {formErrors.telephone}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-1">
                 <Label>Estado</Label>
                 <Select
-                  defaultValue={selectedService.enabled ? "1" : "0"}
-                  name="service_enabled"
+                  defaultValue={selectedCompany.enabled ? "1" : "0"}
+                  name="company_enabled"
                 >
                   <SelectTrigger
                     className={cn(

@@ -30,16 +30,18 @@ export default function AuthHeader() {
           >
             Visitas
           </NavLink>
-          <NavLink
-            to="/charts"
-            className={({ isActive }) =>
-              isActive
-                ? "text-custom-blue font-medium px-5 h-full flex items-center transition duration-300 ease-in-out"
-                : "hover:text-custom-blue text-gray-600 px-5 h-full font-medium flex items-center transition duration-300 ease-in-out"
-            }
-          >
-            Graficos
-          </NavLink>
+          {user.admin && (
+            <NavLink
+              to="/admin/dashboard"
+              className={({ isActive }) =>
+                isActive
+                  ? "text-custom-blue font-medium px-5 h-full flex items-center transition duration-300 ease-in-out"
+                  : "hover:text-custom-blue text-gray-600 px-5 h-full font-medium flex items-center transition duration-300 ease-in-out"
+              }
+            >
+              Panel de admin
+            </NavLink>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">

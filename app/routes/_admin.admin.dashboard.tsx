@@ -18,13 +18,13 @@ export default function AdminLayout() {
   const location = useLocation();
 
   let activeTab = "resumen";
-  if (location.pathname.startsWith("/admin/motives")) activeTab = "motives";
-  else if (location.pathname.startsWith("/admin/services"))
+  if (location.pathname.startsWith("/admin/dashboard/motives")) activeTab = "motives";
+  else if (location.pathname.startsWith("/admin/dashboard/services"))
     activeTab = "services";
-  else if (location.pathname.startsWith("/admin/visitas"))
-    activeTab = "visitas";
-  else if (location.pathname.startsWith("/admin/usuarios"))
-    activeTab = "usuarios";
+  else if (location.pathname.startsWith("/admin/dashboard/companies"))
+    activeTab = "companies";
+  else if (location.pathname.startsWith("/admin/dashboard/users"))
+    activeTab = "users";
   else if (location.pathname.startsWith("/admin/dashboard"))
     activeTab = "resumen";
 
@@ -40,23 +40,23 @@ export default function AdminLayout() {
                   Resumen
                 </TabsTrigger>
               </Link>
-              <Link to="/admin/motives">
+              <Link to="/admin/dashboard/motives">
                 <TabsTrigger className="w-full" value="motives">
                   Motivos
                 </TabsTrigger>
               </Link>
-              <Link to="/admin/services">
+              <Link to="/admin/dashboard/services">
                 <TabsTrigger className="w-full" value="services">
                   Services
                 </TabsTrigger>
               </Link>
-              <Link to="/admin/visitas">
-                <TabsTrigger className="w-full" value="visitas">
-                  Visitas
+              <Link to="/admin/dashboard/companies">
+                <TabsTrigger className="w-full" value="companies">
+                  Empresas
                 </TabsTrigger>
               </Link>
-              <Link to="/admin/usuarios">
-                <TabsTrigger className="w-full" value="usuarios">
+              <Link to="/admin/dashboard/users">
+                <TabsTrigger className="w-full" value="users">
                   Usuarios
                 </TabsTrigger>
               </Link>

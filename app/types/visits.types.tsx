@@ -1,3 +1,4 @@
+import { Company } from "./companies.types";
 import { Motive } from "./motives.types";
 import { Service } from "./services.types";
 
@@ -13,14 +14,6 @@ export interface FamilyVisit {
   updated_at: string;
 }
 
-export interface Company {
-  id: number;
-  CIF: string;
-  name: string;
-  telephone: string;
-  created_at: string;
-  updated_at: string;
-}
 export interface ProfessionalVisit {
   id: number;
   visit_id: number;

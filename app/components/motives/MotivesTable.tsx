@@ -56,7 +56,7 @@ import { Label } from "../ui/label";
 import { cn } from "~/lib/utils";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { loader } from "~/routes/_admin.admin.motives";
+import { loader } from "~/routes/_admin.admin.dashboard.motives";
 interface FetcherEnableOrDisableData {
   success: boolean;
   message: string;
@@ -123,6 +123,7 @@ export default function MotivesTable() {
 
     if (actionData.success && actionData.message) {
       toast.success(actionData.message);
+      setFormErrors(null);
       setIsAddMoalOpen(false);
       setSelectedMotive(null);
     } else if (actionData.message && actionData.clientSideValidationErrors) {

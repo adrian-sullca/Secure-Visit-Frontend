@@ -57,6 +57,9 @@ import { cn } from "~/lib/utils";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { loader } from "~/routes/_admin.admin.dashboard.services";
+import { User } from "~/types/user.types";
+import { action } from "~/routes/_guest.auth";
+
 interface FetcherEnableOrDisableData {
   success: boolean;
   message: string;
@@ -68,38 +71,54 @@ interface ActionData {
   message?: string;
   clientSideValidationErrors?: {
     name?: string;
+    email?: string;
+    password?: string;
+    admin?: boolean;
     enabled?: string;
   };
+  serverSideValidationErrors?: {
+    email?: string;
+  }
 }
 
-export default function ServicesTable() {
-  const { services } = useLoaderData<typeof loader>();
+export default function UsersTable() {
+  const { users } = useLoaderData<typeof loader>();
   const actionData = useActionData<ActionData>();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [formErrors, setFormErrors] = useState<{
     name?: string;
+    email?: string;
+    password?: string;
+    admin?: boolean;
     enabled?: string;
   } | null>(null);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const fetcherEnableOrDisable = useFetcher<FetcherEnableOrDisableData>();
   const [statusFilter, setStatusFilter] = useState<
     "all" | "active" | "inactive"
   >("all");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredServices = services.filter((service: Service) => {
-    if (statusFilter === "active" && !service.enabled) return false;
-    if (statusFilter === "inactive" && service.enabled) return false;
+  const filteredUsers = users.filter((user: User) => {
+    if (statusFilter === "active" && !user.enabled) return false;
+    if (statusFilter === "inactive" && user.enabled) return false;
 
     if (
       searchTerm.trim() !== "" &&
-      !service.name.toLowerCase().includes(searchTerm.toLowerCase())
+      !user.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
       return false;
 
     return true;
   });
+
+  const getRolBadge = (status: boolean) => {
+    if (status == true) {
+      return <Badge className="bg-green-500 hover:bg-green-600">Admin</Badge>;
+    }
+    return <Badge variant="secondary">No admin</Badge>;
+  };
 
   const getStatusBadge = (status: boolean) => {
     if (status == true) {
@@ -125,9 +144,12 @@ export default function ServicesTable() {
     if (actionData.success && actionData.message) {
       toast.success(actionData.message);
       setIsAddModalOpen(false);
-      setSelectedService(null);
+      setSelectedUser(null);
     } else if (actionData.message && actionData.clientSideValidationErrors) {
       setFormErrors(actionData.clientSideValidationErrors);
+      toast.error(actionData.message);
+    } else if (actionData.message && actionData.serverSideValidationErrors) {
+      setFormErrors(actionData.serverSideValidationErrors);
       toast.error(actionData.message);
     }
   }, [actionData]);
@@ -137,9 +159,9 @@ export default function ServicesTable() {
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <CardTitle className="text-left">Gestion de Servicios</CardTitle>
+            <CardTitle className="text-left">Gestion de Usuarios</CardTitle>
             <CardDescription className="text-left">
-              Gestiona los servicios de la aplicación
+              Gestiona los usuarios de la aplicación
             </CardDescription>
           </div>
           <div>
@@ -155,14 +177,14 @@ export default function ServicesTable() {
               <DialogTrigger asChild>
                 <Button onClick={() => setIsAddModalOpen(true)}>
                   <Plus />
-                  <span className="ml-1">Añadir servicio</span>
+                  <span className="ml-1">Añadir usuario</span>
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle className="text-xl">Añadir servicio</DialogTitle>
+                  <DialogTitle className="text-xl">Añadir usuario</DialogTitle>
                   <DialogDescription>
-                    Añade un servicio para las visitas profesionales
+                    Añade un usuario para controlar las visitas
                   </DialogDescription>
                 </DialogHeader>
                 <Form method="post">
@@ -170,7 +192,7 @@ export default function ServicesTable() {
                   <div className="space-y-1">
                     <Label>Nombre</Label>
                     <Input
-                      name="service_name"
+                      name="user_name"
                       className={cn(
                         "input",
                         formErrors?.name &&
@@ -185,9 +207,71 @@ export default function ServicesTable() {
                       )}
                     </div>
                   </div>
+                  <div className="space-y-1">
+                    <Label>Email</Label>
+                    <Input
+                      name="user_email"
+                      className={cn(
+                        "input",
+                        formErrors?.name &&
+                          "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
+                      )}
+                    />
+                    <div className="min-h-[16px]">
+                      {formErrors?.name && (
+                        <p className="text-xs text-red-600 mt-1">
+                          {formErrors.name}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Contraseña</Label>
+                    <Input
+                      name="user_password"
+                      type="password"
+                      className={cn(
+                        "input",
+                        formErrors?.password &&
+                          "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
+                      )}
+                    />
+                    <div className="min-h-[16px]">
+                      {formErrors?.password && (
+                        <p className="text-xs text-red-600 mt-1">
+                          {formErrors.password}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Rol</Label>
+                    <Select defaultValue="0" name="user_admin">
+                      <SelectTrigger
+                        className={cn(
+                          "input",
+                          formErrors?.admin &&
+                            "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                        )}
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Admin</SelectItem>
+                        <SelectItem value="0">No admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <div className="min-h-[16px]">
+                      {formErrors?.admin && (
+                        <p className="text-xs text-red-600 mt-1">
+                          {formErrors.admin}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                   <DialogFooter className="mt-2 flex gap-2 sm:gap-0">
                     <DialogClose asChild>
-                      <Button variant="outline">Cancel</Button>
+                      <Button variant="outline">Cancelar</Button>
                     </DialogClose>
                     <Button type="submit">Añadir</Button>
                   </DialogFooter>
@@ -203,7 +287,7 @@ export default function ServicesTable() {
             <div className="relative w-full">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Buscar servicios..."
+                placeholder="Buscar usuarios por nombre o email..."
                 className="pl-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -234,27 +318,35 @@ export default function ServicesTable() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-16">Id</TableHead>
-                  <TableHead className="max-w-[160px]">Nombre</TableHead>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Rol</TableHead>
                   <TableHead className="w-28">Estado</TableHead>
                   <TableHead className="text-right w-32">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredServices.map((service: Service) => (
-                  <TableRow key={service.id} className="text-sm">
-                    <TableCell className="w-16">{service.id}</TableCell>
+                {filteredUsers.map((user: User) => (
+                  <TableRow key={user.id} className="text-sm">
+                    <TableCell className="w-16">{user.id}</TableCell>
                     <TableCell className="max-w-[160px] truncate">
-                      {service.name}
+                      {user.name}
+                    </TableCell>
+                    <TableCell className="max-w-[160px] truncate">
+                      {user.email}
+                    </TableCell>
+                    <TableCell className="max-w-[160px] truncate">
+                      {getRolBadge(user.admin)}
                     </TableCell>
                     <TableCell className="w-28">
-                      {getStatusBadge(service.enabled)}
+                      {getStatusBadge(user.enabled)}
                     </TableCell>
                     <TableCell className="text-right w-32">
                       <div className="flex justify-end space-x-2">
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="outline" size="sm">
-                              {service.enabled ? (
+                              {user.enabled ? (
                                 <Trash2 className="h-4 w-4" />
                               ) : (
                                 <Check className="h-4 w-4" />
@@ -264,14 +356,14 @@ export default function ServicesTable() {
                           <AlertDialogContent>
                             <AlertDialogHeader>
                               <AlertDialogTitle>
-                                {service.enabled
-                                  ? `¿Eliminar el servicio "${service.name}"?`
-                                  : `¿Habilitar el servicio "${service.name}"?`}
+                                {user.enabled
+                                  ? `¿Deshabilitar el usuario "${user.name}"?`
+                                  : `¿Habilitar el usuario "${user.name}"?`}
                               </AlertDialogTitle>
                               <AlertDialogDescription>
-                                {service.enabled
-                                  ? "¿Estás seguro de eliminar este servicio? Se deshabilitará y no será visible para los usuarios."
-                                  : "¿Estás seguro de habilitar este servicio? Se habilitará y será visible para los usuarios."}
+                                {user.enabled
+                                  ? "¿Estás seguro de deshabilitar este usuario? Se deshabilitará y no podra iniciar sesión."
+                                  : "¿Estás seguro de habilitar este usuario? Se habilitará y podra controlar las visitas."}
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -279,13 +371,13 @@ export default function ServicesTable() {
                               <fetcherEnableOrDisable.Form method="post">
                                 <input
                                   type="hidden"
-                                  name="service_id"
-                                  value={service.id}
+                                  name="user_id"
+                                  value={user.id}
                                 />
                                 <input
                                   type="hidden"
                                   name="intent"
-                                  value={service.enabled ? "disable" : "enable"}
+                                  value={user.enabled ? "disable" : "enable"}
                                 />
                                 <AlertDialogAction
                                   type="submit"
@@ -295,10 +387,10 @@ export default function ServicesTable() {
                                   }
                                 >
                                   {fetcherEnableOrDisable.state === "submitting"
-                                    ? service.enabled
+                                    ? user.enabled
                                       ? "Deshabilitando..."
                                       : "Habilitando..."
-                                    : service.enabled
+                                    : user.enabled
                                     ? "Deshabilitar"
                                     : "Habilitar"}
                                 </AlertDialogAction>
@@ -310,7 +402,7 @@ export default function ServicesTable() {
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            setSelectedService(service);
+                            setSelectedUser(user);
                           }}
                         >
                           <Edit className="h-4 w-4" />
@@ -325,10 +417,10 @@ export default function ServicesTable() {
         </div>
       </CardContent>
       <Dialog
-        open={!!selectedService}
+        open={!!selectedUser}
         onOpenChange={(isOpen) => {
           if (!isOpen) {
-            setSelectedService(null);
+            setSelectedUser(null);
             setFormErrors(null);
           }
         }}
@@ -336,24 +428,19 @@ export default function ServicesTable() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="text-xl">
-              {selectedService &&
-                `Detalles del servicio "${selectedService.name}"`}
+              {selectedUser && `Detalles del usuario "${selectedUser.name}"`}
             </DialogTitle>
-            <DialogDescription>Actualiza un servicio</DialogDescription>
+            <DialogDescription>Actualiza el usuario</DialogDescription>
           </DialogHeader>
-          {selectedService && (
+          {selectedUser && (
             <Form method="patch" className="text-black">
               <input type="hidden" name="intent" value="update" />
-              <input
-                type="hidden"
-                name="service_id"
-                value={selectedService.id}
-              />
+              <input type="hidden" name="user_id" value={selectedUser.id} />
               <div className="space-y-1">
                 <Label>Nombre</Label>
                 <Input
-                  name="service_name"
-                  defaultValue={selectedService.name}
+                  name="user_name"
+                  defaultValue={selectedUser.name}
                   className={cn(
                     "input",
                     formErrors?.name &&
@@ -369,10 +456,75 @@ export default function ServicesTable() {
                 </div>
               </div>
               <div className="space-y-1">
+                <Label>Email</Label>
+                <Input
+                  name="user_email"
+                  defaultValue={selectedUser.email}
+                  className={cn(
+                    "input",
+                    formErrors?.email &&
+                      "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
+                  )}
+                />
+                <div className="min-h-[16px]">
+                  {formErrors?.email && (
+                    <p className="text-xs text-red-600 mt-1">
+                      {formErrors.email}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label>Nueva contraseña (Opcional)</Label>
+                <Input
+                  name="user_password"
+                  className={cn(
+                    "input",
+                    formErrors?.password &&
+                      "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
+                  )}
+                />
+                <div className="min-h-[16px]">
+                  {formErrors?.password && (
+                    <p className="text-xs text-red-600 mt-1">
+                      {formErrors.password}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label>Rol</Label>
+                <Select
+                  defaultValue={selectedUser.admin ? "1" : "0"}
+                  name="user_admin"
+                >
+                  <SelectTrigger
+                    className={cn(
+                      "input",
+                      formErrors?.admin &&
+                        "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                    )}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Admin</SelectItem>
+                    <SelectItem value="0">No admin</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="min-h-[16px]">
+                  {formErrors?.admin && (
+                    <p className="text-xs text-red-600 mt-1">
+                      {formErrors.admin}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-1">
                 <Label>Estado</Label>
                 <Select
-                  defaultValue={selectedService.enabled ? "1" : "0"}
-                  name="service_enabled"
+                  defaultValue={selectedUser.enabled ? "1" : "0"}
+                  name="user_enabled"
                 >
                   <SelectTrigger
                     className={cn(

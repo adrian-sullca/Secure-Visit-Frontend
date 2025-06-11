@@ -79,7 +79,6 @@ import {
   PaginationPrevious,
 } from "~/components/ui/pagination";
 import { exportToExcel, exportToPDF } from "./ExportData";
-import { User } from "~/types/user.types";
 
 export default function VisitsTable() {
   const loaderData =
