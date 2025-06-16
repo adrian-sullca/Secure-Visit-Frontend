@@ -6,11 +6,13 @@ import {
 } from "@remix-run/node";
 import VisitsTable from "~/components/visits/VisitsTable";
 import { getUserByToken, requireAuth } from "~/server/auth.server";
+import { getAllCompanies } from "~/server/companies.server";
 import { getAllMotives } from "~/server/motives.server";
 import { getAllServices } from "~/server/services.server";
 import {
   createFamilyVisit,
   createProfessionalVisit,
+  getAllVisitors,
   getAllVisits,
   markExitVisit,
 } from "~/server/visits.server";
@@ -34,17 +36,22 @@ export const meta: MetaFunction = () => {
 export const loader: LoaderFunction = async ({ request }) => {
   const authToken = await requireAuth(request);
   const user = await getUserByToken(request);
+  const resGetAllVisitors = await getAllVisitors(authToken);
+  const resGetAllCompanies = await getAllCompanies(authToken);
+  // Obtiene todas las entradas y salidas
   const resGetAllVisits = await getAllVisits(authToken);
   const resGetAllMotives = await getAllMotives(authToken);
   const resGetAllServices = await getAllServices(authToken);
   const courses = ["1 ESO", "2 ESO", "3 ESO", "4 ESO"]; // TODO: Obtener de base de datos
-  console.log("data formateada", resGetAllVisits?.visits);
+
   return json({
     user: user, 
     courses: courses,
     motives: resGetAllMotives?.motives,
     services: resGetAllServices?.services,
     visits: resGetAllVisits?.visits,
+    visitors: resGetAllVisitors?.visitors,
+    companies: resGetAllCompanies?.companies,
     meta: resGetAllVisits?.meta,
   });
 };
@@ -54,14 +61,13 @@ export const action: ActionFunction = async ({ request }) => {
   const authToken = await requireAuth(request);
 
   const intent = formData.get("intent");
-  console.log("intneto", intent);
+
   if (intent === "mark-exit") {
     const entryIdRaw = formData.get("entry_id");
     const entryId =
       typeof entryIdRaw === "string" && entryIdRaw !== ""
         ? Number(entryIdRaw)
         : null;
-    console.log(entryId);
     if (entryId === null || isNaN(entryId)) {
       // TODO: MOSTRAR TOAST DE ERROR
       throw new Error("ID de entrada no válido");
@@ -98,7 +104,6 @@ export const action: ActionFunction = async ({ request }) => {
         });
 
       await createFamilyVisit(authToken, formDataAddFamilyVisit);
-      // TODO : MOSTRAR ERRORES DE SERVIDOR
       return json({ success: true, message: "Visita familiar registrada" });
     }
 
@@ -116,7 +121,7 @@ export const action: ActionFunction = async ({ request }) => {
         companyName: formData.get("company_name") as string,
         companyTelephone: formData.get("company_telephone") as string,
       };
-
+     
       const clientSideValidationErrors = validateFormAddProfessionalVisit(
         formDataAddProfessionalVisit
       );
@@ -129,14 +134,12 @@ export const action: ActionFunction = async ({ request }) => {
         });
 
       await createProfessionalVisit(authToken, formDataAddProfessionalVisit);
-      // TODO : MOSTRAR ERRORES DE SERVIDOR
       return json({ success: true, message: "Visita Profesional registrada" });
     }
 
     return null;
   } else if (intent === "update") {
     const visitName = formData.get("visit_name");
-    console.log("visit name update", visitName);
     return null;
   } else {
     const perPage = formData.get("per_page") as string;

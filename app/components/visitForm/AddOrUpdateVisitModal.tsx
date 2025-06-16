@@ -13,12 +13,15 @@ import GeneralVisitDataSection from "./GeneralVisitDataSection";
 import VisitorDataSection from "./VisitorDataSection";
 import CompanyDataSection from "./CompanyDataSection";
 import { useRef, useState } from "react";
-import { VisitFormatted } from "~/types/visits.types";
+import { Visit, VisitFormatted } from "~/types/visits.types";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { FetcherWithComponents, Form, useLoaderData } from "@remix-run/react";
 import StudentDataSection from "./StudentDataSection";
+import { Company } from "~/types/companies.types";
 
 interface AddOrUpdateVisitModalProps {
+  allVisitors: Visit[];
+  allCompanies: Company[];
   fetcherAddOrUpdate: FetcherWithComponents<any>;
   showMode: boolean;
   showModalAddOrUpdate: boolean;
@@ -27,6 +30,8 @@ interface AddOrUpdateVisitModalProps {
 }
 
 export default function AddOrUpdateVisitModal({
+  allVisitors,
+  allCompanies,
   fetcherAddOrUpdate,
   showMode,
   showModalAddOrUpdate,
@@ -240,6 +245,7 @@ export default function AddOrUpdateVisitModal({
               <div className="md:flex justify-between gap-5 space-y-5 md:space-y-0">
                 {/* Visitor Data */}
                 <VisitorDataSection
+                  allVisitors={allVisitors}
                   showMode={showMode}
                   editMode={editMode}
                   visitData={visitData}
@@ -262,6 +268,7 @@ export default function AddOrUpdateVisitModal({
                     visitData={visitData}
                     handleChange={handleChange}
                     fetcherAddOrUpdate={fetcherAddOrUpdate}
+                    allCompanies={allCompanies}
                   />
                 )}
               </div>

@@ -1,10 +1,12 @@
 import { User } from "lucide-react";
 import { Label } from "~/components/ui/label";
 import { Input } from "~/components/ui/input";
-import { VisitFormatted } from "~/types/visits.types";
+import { Visit, VisitFormatted } from "~/types/visits.types";
 import { cn } from "~/lib/utils";
+import { AutoCompleteInput } from "./AutoCompleteInput";
 
 interface VisitorDataSectionProps {
+  allVisitors: Visit[];
   showMode: boolean;
   editMode: boolean;
   visitData: VisitFormatted;
@@ -13,6 +15,7 @@ interface VisitorDataSectionProps {
 }
 
 export default function VisitorDataSection({
+  allVisitors,
   showMode,
   editMode,
   visitData,
@@ -34,17 +37,41 @@ export default function VisitorDataSection({
           <div className="flex justify-between gap-x-4">
             <div className="space-y-1 w-full">
               <Label>NIF</Label>
-              <Input
+              <AutoCompleteInput
+                allItems={allVisitors}
+                searchKey="professional_visit.company.NIF"
+                placeholder="Autocompletado"
+                onSelect={(visitor: Visit) => {
+                  handleChange("visit_email", visitor.email);
+                  handleChange("visit_name", visitor.name || "");
+                  handleChange("visit_surname", visitor.surname || "");
+                  handleChange("visit_type", visitor.visit_type || "");
+                  handleChange(
+                    "age",
+                    String(visitor.professional_visit?.age) || ""
+                  );
+                  handleChange("NIF", visitor.professional_visit?.NIF || "");
+                  handleChange(
+                    "company_CIF",
+                    visitor.professional_visit?.company.CIF || ""
+                  );
+                  handleChange(
+                    "company_name",
+                    visitor.professional_visit?.company.name || ""
+                  );
+                  handleChange(
+                    "company_telephone",
+                    visitor.professional_visit?.company.telephone || ""
+                  );
+                }}
+                renderItem={(visitor: Visit) =>
+                  `${visitor.professional_visit?.NIF} — ${visitor.name}`
+                }
+                value={visitData.NIF || ""}
                 disabled={showMode && !editMode}
-                value={visitData.NIF ? visitData.NIF : ""}
-                onChange={(e) => handleChange("NIF", e.target.value)}
-                name="NIF"
-                className={cn(
-                  "input",
-                  errors.professionalNIF &&
-                    "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
-                )}
-              ></Input>
+                hasError={!!errors.professionalNIF}
+                onChange={(value) => handleChange("NIF", value)}
+              />
               <div className="min-h-[16px]">
                 {errors.professionalNIF && (
                   <p className="text-xs text-red-600 mt-1">
@@ -124,17 +151,41 @@ export default function VisitorDataSection({
         </div>
         <div className="space-y-1">
           <Label>Email</Label>
-          <Input
+          <AutoCompleteInput
+            allItems={allVisitors}
+            searchKey="email"
+            placeholder="Autocompletado"
+            onSelect={(visitor: Visit) => {
+              handleChange("visit_email", visitor.email);
+              handleChange("visit_name", visitor.name || "");
+              handleChange("visit_surname", visitor.surname || "");
+              handleChange("visit_type", visitor.visit_type || "");
+              handleChange(
+                "age",
+                String(visitor.professional_visit?.age) || ""
+              );
+              handleChange("NIF", visitor.professional_visit?.NIF || "");
+              handleChange(
+                "company_CIF",
+                visitor.professional_visit?.company.CIF || ""
+              );
+              handleChange(
+                "company_name",
+                visitor.professional_visit?.company.name || ""
+              );
+              handleChange(
+                "company_telephone",
+                visitor.professional_visit?.company.telephone || ""
+              );
+            }}
+            renderItem={(visitor: Visit) =>
+              `${visitor.email} — ${visitor.name}`
+            }
+            value={visitData.visit_email || ""}
             disabled={showMode && !editMode}
-            value={visitData.visit_email}
-            onChange={(e) => handleChange("visit_email", e.target.value)}
-            name="visit_email"
-            className={cn(
-              "input",
-              errors.visitEmail &&
-                "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
-            )}
-          ></Input>
+            hasError={!!errors.visitEmail}
+            onChange={(value) => handleChange("visit_email", value)}
+          />
           <div className="min-h-[16px]">
             {errors.visitEmail && (
               <p className="text-xs text-red-600 mt-1">{errors.visitEmail}</p>

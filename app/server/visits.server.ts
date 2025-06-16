@@ -141,6 +141,8 @@ export async function createProfessionalVisit(
       console.log(response.data);
     }
   } catch (error) {
+    console.log(error);
+    console.log(error.response.data);
     if (isAxiosError(error)) {
       console.error("Mensaje del backend:", error.response?.data?.message);
 
@@ -164,12 +166,13 @@ export async function markExitVisit(authToken: string, entryId: number) {
         },
       }
     );
-
+    console.log(response.data);
     if (response.status == 201) {
       console.log(response.data);
     }
   } catch (error) {
-    console.error(error);
+    console.log(error);
+    console.log(error.response);
   }
 }
 
@@ -237,4 +240,26 @@ function formatVisitData(visits: Visits[]) {
       company_telephone: company?.telephone ?? null,
     };
   });
+}
+
+export async function getAllVisitors(authToken: string) {
+  try {
+    const response = await axiosInstance.get("/visits", {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+    console.log(response.data)
+    if (response.status === 200) {
+      return {
+        success: true,
+        visitors: response.data.visitors,
+      };
+    }
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+    };
+  }
 }

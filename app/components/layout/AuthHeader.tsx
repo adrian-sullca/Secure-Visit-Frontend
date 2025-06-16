@@ -30,7 +30,7 @@ export default function AuthHeader() {
           >
             Visitas
           </NavLink>
-          {user.admin && (
+          {user.admin == true ? (
             <NavLink
               to="/admin/dashboard"
               className={({ isActive }) =>
@@ -41,6 +41,8 @@ export default function AuthHeader() {
             >
               Panel de admin
             </NavLink>
+          ) : (
+            ""
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -110,7 +110,7 @@ export default function VisitsTable() {
   const [isPopoverDateEntryOpen, setIsPopoverDateEntryOpen] = useState(false);
   const [isPopoverDateExitOpen, setIsPopoverDateExitOpen] = useState(false);
 
-  const [editMode, setEditMode] = useState(false);
+  // const [editMode, setEditMode] = useState(false);
   const [showMode, setShowMode] = useState(false);
   const [selectedVisit, setSelectedVisit] = useState(null);
   const [showModalAddOrUpdate, setShowModalAddOrUpdate] = useState(false);
@@ -348,8 +348,16 @@ export default function VisitsTable() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => exportToPDF(visits, loaderData.user)}>Descargar PDF</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => exportToExcel(visits, loaderData.user)}>Descargar EXCEL</DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => exportToPDF(visits, loaderData.user)}
+                  >
+                    Descargar PDF
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => exportToExcel(visits, loaderData.user)}
+                  >
+                    Descargar EXCEL
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <Button
@@ -1025,6 +1033,8 @@ export default function VisitsTable() {
       {/* Modal Add or Update Visit */}
       {showModalAddOrUpdate && (
         <AddOrUpdateVisitModal
+          allVisitors={loaderData.visitors}
+          allCompanies={loaderData.companies}
           fetcherAddOrUpdate={fetcherAddOrUpdate}
           showMode={showMode}
           showModalAddOrUpdate={showModalAddOrUpdate}

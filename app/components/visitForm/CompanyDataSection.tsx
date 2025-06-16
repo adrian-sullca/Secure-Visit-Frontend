@@ -4,6 +4,8 @@ import { Input } from "~/components/ui/input";
 import { VisitFormatted } from "~/types/visits.types";
 import { cn } from "~/lib/utils";
 import { FetcherWithComponents } from "@remix-run/react";
+import { AutoCompleteInput } from "./AutoCompleteInput";
+import { Company } from "~/types/companies.types";
 
 interface CompanyDataSectionProps {
   showMode: boolean;
@@ -11,6 +13,7 @@ interface CompanyDataSectionProps {
   visitData: VisitFormatted;
   handleChange: (field: string, value: string) => void;
   fetcherAddOrUpdate: FetcherWithComponents<any>;
+  allCompanies: Company[];
 }
 
 export default function CompanyDataSection({
@@ -19,6 +22,7 @@ export default function CompanyDataSection({
   visitData,
   handleChange,
   fetcherAddOrUpdate,
+  allCompanies,
 }: CompanyDataSectionProps) {
   const errors = fetcherAddOrUpdate.data?.clientSideValidationErrors || {};
 
@@ -33,16 +37,23 @@ export default function CompanyDataSection({
       <div>
         <div className="space-y-1">
           <Label>CIF</Label>
-          <Input
+          <AutoCompleteInput
+            allItems={allCompanies}
+            searchKey="CIF"
+            placeholder="Autocompletado"
+            onSelect={(company: Company) => {
+              handleChange("company_CIF", company.CIF);
+              handleChange("company_name", company.name || "");
+              handleChange("company_telephone", company.telephone || "");
+            }}
+            renderItem={(company: Company) =>
+              `${company?.CIF} — ${company.name}`
+            }
+            value={visitData.company_CIF || ""}
             disabled={showMode && !editMode}
-            value={visitData.company_CIF ? visitData.company_CIF : ""}
-            onChange={(e) => handleChange("company_CIF", e.target.value)}
-            className={cn(
-              "input",
-              errors.companyCIF &&
-                "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
-            )}
-          ></Input>
+            hasError={!!errors.companyCIF}
+            onChange={(value) => handleChange("company_CIF", value)}
+          />
           <div className="min-h-[16px]">
             {errors.companyCIF && (
               <p className="text-xs text-red-600 mt-1">{errors.companyCIF}</p>
@@ -70,18 +81,23 @@ export default function CompanyDataSection({
         </div>
         <div className="space-y-1">
           <Label>Telefono</Label>
-          <Input
-            disabled={showMode && !editMode}
-            value={
-              visitData.company_telephone ? visitData.company_telephone : ""
+          <AutoCompleteInput
+            allItems={allCompanies}
+            searchKey="telephone"
+            placeholder="Autocompletado"
+            onSelect={(company: Company) => {
+              handleChange("company_CIF", company.CIF);
+              handleChange("company_name", company.name || "");
+              handleChange("company_telephone", company.telephone || "");
+            }}
+            renderItem={(company: Company) =>
+              `${company?.CIF} — ${company.name}`
             }
-            onChange={(e) => handleChange("company_telephone", e.target.value)}
-            className={cn(
-              "input",
-              errors.companyTelephone &&
-                "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
-            )}
-          ></Input>
+            value={visitData.company_telephone || ""}
+            disabled={showMode && !editMode}
+            hasError={!!errors.companyTelephone}
+            onChange={(value) => handleChange("company_telephone", value)}
+          />
           <div className="min-h-[16px]">
             {errors.companyTelephone && (
               <p className="text-xs text-red-600 mt-1">
