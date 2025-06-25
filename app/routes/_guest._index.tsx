@@ -23,7 +23,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     return redirect("/visits");
   }
 
-  return null;
+  return redirect("/auth");
 };
 
 export default function AuthPage() {
