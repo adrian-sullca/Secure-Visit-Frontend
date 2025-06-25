@@ -10,20 +10,22 @@ import { getAllCompanies } from "~/server/companies.server";
 import { getAllMotives } from "~/server/motives.server";
 import { getAllServices } from "~/server/services.server";
 import {
-  createFamilyVisit,
-  createProfessionalVisit,
+  createEntryVisit,
+  deleteEntryVisit,
   getAllVisitors,
   getAllVisits,
   markExitVisit,
+  updateVisitAndEntry,
 } from "~/server/visits.server";
 import {
-  FormDataAddFamilyVisit,
-  FormDataAddProfessionalVisit,
+  FormDataEntryVisit,
+  FormDataFamilyVisit,
+  FormDataProfessionalVisit,
   VisitFilters,
 } from "~/types/visits.types";
 import {
-  validateFormAddFamilyVisit,
-  validateFormAddProfessionalVisit,
+  validateFormDataEntryVisit,
+  validateUpdateFormEntryVisit,
 } from "~/validations/visit.validations";
 
 export const meta: MetaFunction = () => {
@@ -45,7 +47,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const courses = ["1 ESO", "2 ESO", "3 ESO", "4 ESO"]; // TODO: Obtener de base de datos
 
   return json({
-    user: user, 
+    user: user,
     courses: courses,
     motives: resGetAllMotives?.motives,
     services: resGetAllServices?.services,
@@ -80,67 +82,160 @@ export const action: ActionFunction = async ({ request }) => {
 
   if (intent === "create") {
     const visitType = formData.get("visit_type");
-    if (visitType == "family") {
-      const formDataAddFamilyVisit: FormDataAddFamilyVisit = {
-        visitType: formData.get("visit_type") as string,
-        motiveId: formData.get("motive_id") as string,
-        motiveDescription: formData.get("custom_motive") as string,
-        visitName: formData.get("visit_name") as string,
-        visitSurname: formData.get("visit_surname") as string,
-        visitEmail: formData.get("visit_email") as string,
-        studentName: formData.get("student_name") as string,
-        studentSurname: formData.get("student_surname") as string,
-        studentCourse: formData.get("student_course") as string,
-      };
-      const clientSideValidationErrors = validateFormAddFamilyVisit(
-        formDataAddFamilyVisit
-      );
 
-      if (clientSideValidationErrors)
-        return json({
-          success: false,
-          clientSideValidationErrors,
-          message: "Corrige los errores del formulario",
-        });
+    const formDataAddEntryVisit: FormDataEntryVisit = {
+      visit_type: visitType as string,
 
-      await createFamilyVisit(authToken, formDataAddFamilyVisit);
-      return json({ success: true, message: "Visita familiar registrada" });
+      name: formData.get("visit_name") as string,
+      surname: formData.get("visit_surname") as string,
+      email: formData.get("visit_email") as string,
+
+      student_name: formData.get("student_name") as string,
+      student_surname: formData.get("student_surname") as string,
+      student_course: formData.get("student_course") as string,
+      motive_id: formData.get("motive_id") as string,
+      custom_motive: formData.get("custom_motive") as string,
+
+      NIF: formData.get("NIF") as string,
+      age: formData.get("age") as string,
+      service_id: formData.get("service_id") as string,
+      task: formData.get("task") as string,
+
+      CIF: formData.get("company_CIF") as string,
+      company_name: formData.get("company_name") as string,
+      company_telephone: formData.get("company_telephone") as string,
+    };
+
+    const clientSideValidationErrors = validateFormDataEntryVisit(
+      formDataAddEntryVisit
+    );
+
+    if (clientSideValidationErrors)
+      return json({
+        success: false,
+        clientSideValidationErrors,
+        message: "Corrige los errores del formulario",
+      });
+
+    const resCreateEntryVisit = await createEntryVisit(
+      authToken,
+      formDataAddEntryVisit
+    );
+    console.log("respuestsa", resCreateEntryVisit);
+    if (resCreateEntryVisit?.success) {
+      return json({ success: true, message: resCreateEntryVisit.message });
+    } else {
+      return json({
+        success: false,
+        message: resCreateEntryVisit?.message,
+        serverValidationErrors: toCamelCaseErrors(
+          resCreateEntryVisit?.serverValidationErrors ?? {}
+        ),
+      });
     }
-
-    if (visitType == "professional") {
-      const formDataAddProfessionalVisit: FormDataAddProfessionalVisit = {
-        visitType: formData.get("visit_type") as string,
-        serviceId: formData.get("service_id") as string,
-        taskDescription: formData.get("task") as string,
-        professionalNIF: formData.get("NIF") as string,
-        professionalAge: formData.get("age") as string,
-        visitName: formData.get("visit_name") as string,
-        visitSurname: formData.get("visit_surname") as string,
-        visitEmail: formData.get("visit_email") as string,
-        companyCIF: formData.get("company_CIF") as string,
-        companyName: formData.get("company_name") as string,
-        companyTelephone: formData.get("company_telephone") as string,
-      };
-     
-      const clientSideValidationErrors = validateFormAddProfessionalVisit(
-        formDataAddProfessionalVisit
-      );
-
-      if (clientSideValidationErrors)
-        return json({
-          success: false,
-          clientSideValidationErrors,
-          message: "Corrige los errores del formulario",
-        });
-
-      await createProfessionalVisit(authToken, formDataAddProfessionalVisit);
-      return json({ success: true, message: "Visita Profesional registrada" });
-    }
-
-    return null;
   } else if (intent === "update") {
-    const visitName = formData.get("visit_name");
-    return null;
+    const entryId = formData.get("id") as string;
+    const visitType = formData.get("visit_type");
+
+    const date_entry_formatted =
+      formData.get("date_entry_value") + " " + formData.get("time_entry");
+    const date_exit_formatted =
+      formData.get("date_exit_value") + " " + formData.get("time_exit");
+
+    const entryVisitFormData: FormDataEntryVisit = {
+      dateEntryForm: formData.get("date_entry_value") as string,
+      timeEntryForm: formData.get("time_entry") as string,
+      dateExitForm: formData.get("date_exit_value") as string,
+      timeExitForm: formData.get("time_exit") as string,
+
+      visit_type: visitType as string,
+      visit_id: formData.get("visit_id") as string,
+      date_entry: date_entry_formatted as string,
+      date_exit: date_exit_formatted as string,
+      name: formData.get("visit_name") as string,
+      surname: formData.get("visit_surname") as string,
+      email: formData.get("visit_email") as string,
+      family_visit_id: "",
+      student_name: "",
+      student_surname: "",
+      student_course: "",
+      motive_id: "",
+      custom_motive: "",
+      company_id: "",
+      NIF: "",
+      age: "",
+      service_id: "",
+      task: "",
+      CIF: "",
+      company_name: "",
+      company_telephone: "",
+    };
+
+    if (visitType == "family") {
+      entryVisitFormData.family_visit_id = formData.get(
+        "family_visit_id"
+      ) as string;
+      entryVisitFormData.student_name = formData.get("student_name") as string;
+      entryVisitFormData.student_surname = formData.get(
+        "student_surname"
+      ) as string;
+      entryVisitFormData.student_course = formData.get(
+        "student_course"
+      ) as string;
+      entryVisitFormData.motive_id = formData.get("motive_id") as string;
+      entryVisitFormData.custom_motive = formData.get(
+        "custom_motive"
+      ) as string;
+    } else {
+      entryVisitFormData.company_id = formData.get("company_id") as string;
+      entryVisitFormData.NIF = formData.get("NIF") as string;
+      entryVisitFormData.age = formData.get("age") as string;
+      entryVisitFormData.service_id = formData.get("service_id") as string;
+      entryVisitFormData.task = formData.get("task") as string;
+      entryVisitFormData.CIF = formData.get("company_CIF") as string;
+      entryVisitFormData.company_name = formData.get("company_name") as string;
+      entryVisitFormData.company_telephone = formData.get(
+        "company_telephone"
+      ) as string;
+    }
+
+    const clientSideValidationErrors =
+      validateUpdateFormEntryVisit(entryVisitFormData);
+
+    console.log("clien side validation Errors", clientSideValidationErrors);
+
+    if (clientSideValidationErrors)
+      return json({
+        success: false,
+        clientSideValidationErrors,
+        message: "Corrige los errores del formulario",
+      });
+
+    const updateEntryVisitData = await updateVisitAndEntry(
+      authToken,
+      entryId,
+      entryVisitFormData
+    );
+    if (updateEntryVisitData?.success) {
+      return json({ success: true, message: updateEntryVisitData.message });
+    } else {
+      return json({
+        success: false,
+        message: updateEntryVisitData?.message,
+        serverValidationErrors: toCamelCaseErrors(
+          updateEntryVisitData?.serverValidationErrors ?? {}
+        ),
+      });
+    }
+  } else if (intent == "delete") {
+    const entryId = formData.get("entry_id") as string;
+
+    const deleteEntry = await deleteEntryVisit(authToken, entryId);
+    console.log(deleteEntry);
+    return json({
+      success: deleteEntry?.success,
+      message: deleteEntry?.message,
+    });
   } else {
     const perPage = formData.get("per_page") as string;
     const page = (formData.get("page") as string) || "1";
@@ -189,4 +284,17 @@ export default function AuthPage() {
       <VisitsTable />
     </div>
   );
+}
+
+function toCamelCaseErrors(
+  errors: Record<string, string>
+): Record<string, string> {
+  const camelCased: Record<string, string> = {};
+  for (const key in errors) {
+    const camelKey = key.replace(/_([a-z])/g, (_, letter) =>
+      letter.toUpperCase()
+    );
+    camelCased[camelKey] = errors[key];
+  }
+  return camelCased;
 }

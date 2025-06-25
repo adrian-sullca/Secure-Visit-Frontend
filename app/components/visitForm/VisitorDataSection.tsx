@@ -4,6 +4,7 @@ import { Input } from "~/components/ui/input";
 import { Visit, VisitFormatted } from "~/types/visits.types";
 import { cn } from "~/lib/utils";
 import { AutoCompleteInput } from "./AutoCompleteInput";
+import { FetcherWithComponents } from "@remix-run/react";
 
 interface VisitorDataSectionProps {
   allVisitors: Visit[];
@@ -11,7 +12,7 @@ interface VisitorDataSectionProps {
   editMode: boolean;
   visitData: VisitFormatted;
   handleChange: (field: string, value: string) => void;
-  errors: {};
+  fetcherAddOrUpdate: FetcherWithComponents<any>;
 }
 
 export default function VisitorDataSection({
@@ -20,8 +21,13 @@ export default function VisitorDataSection({
   editMode,
   visitData,
   handleChange,
-  errors,
+  fetcherAddOrUpdate,
 }: VisitorDataSectionProps) {
+  const errors =
+    fetcherAddOrUpdate.data?.clientSideValidationErrors ||
+    fetcherAddOrUpdate.data?.serverValidationErrors ||
+    {};
+
   return (
     <div className="p-5 border rounded-lg w-full">
       <div className="flex gap-3 items-center mb-4">
@@ -69,14 +75,12 @@ export default function VisitorDataSection({
                 }
                 value={visitData.NIF || ""}
                 disabled={showMode && !editMode}
-                hasError={!!errors.professionalNIF}
+                hasError={!!errors.NIF}
                 onChange={(value) => handleChange("NIF", value)}
               />
               <div className="min-h-[16px]">
-                {errors.professionalNIF && (
-                  <p className="text-xs text-red-600 mt-1">
-                    {errors.professionalNIF}
-                  </p>
+                {errors.NIF && (
+                  <p className="text-xs text-red-600 mt-1">{errors.NIF}</p>
                 )}
               </div>
             </div>
@@ -89,15 +93,13 @@ export default function VisitorDataSection({
                 name="age"
                 className={cn(
                   "input",
-                  errors.professionalAge &&
+                  errors.age &&
                     "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
                 )}
               ></Input>
               <div className="min-h-[16px]">
-                {errors.professionalAge && (
-                  <p className="text-xs text-red-600 mt-1">
-                    {errors.professionalAge}
-                  </p>
+                {errors.age && (
+                  <p className="text-xs text-red-600 mt-1">{errors.age}</p>
                 )}
               </div>
             </div>
@@ -117,13 +119,13 @@ export default function VisitorDataSection({
               name="visit_name"
               className={cn(
                 "input",
-                errors.visitName &&
+                errors.name &&
                   "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
               )}
             ></Input>
             <div className="min-h-[16px]">
-              {errors.visitName && (
-                <p className="text-xs text-red-600 mt-1">{errors.visitName}</p>
+              {errors.name && (
+                <p className="text-xs text-red-600 mt-1">{errors.name}</p>
               )}
             </div>
           </div>
@@ -136,15 +138,13 @@ export default function VisitorDataSection({
               name="visit_surname"
               className={cn(
                 "input",
-                errors.visitSurname &&
+                errors.surname &&
                   "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
               )}
             ></Input>
             <div className="min-h-[16px]">
-              {errors.visitSurname && (
-                <p className="text-xs text-red-600 mt-1">
-                  {errors.visitSurname}
-                </p>
+              {errors.surname && (
+                <p className="text-xs text-red-600 mt-1">{errors.surname}</p>
               )}
             </div>
           </div>
@@ -160,10 +160,7 @@ export default function VisitorDataSection({
               handleChange("visit_name", visitor.name || "");
               handleChange("visit_surname", visitor.surname || "");
               handleChange("visit_type", visitor.visit_type || "");
-              handleChange(
-                "age",
-                String(visitor.professional_visit?.age) || ""
-              );
+              handleChange("age", visitor.professional_visit?.age || "");
               handleChange("NIF", visitor.professional_visit?.NIF || "");
               handleChange(
                 "company_CIF",
@@ -183,12 +180,12 @@ export default function VisitorDataSection({
             }
             value={visitData.visit_email || ""}
             disabled={showMode && !editMode}
-            hasError={!!errors.visitEmail}
+            hasError={!!errors.email}
             onChange={(value) => handleChange("visit_email", value)}
           />
           <div className="min-h-[16px]">
-            {errors.visitEmail && (
-              <p className="text-xs text-red-600 mt-1">{errors.visitEmail}</p>
+            {errors.email && (
+              <p className="text-xs text-red-600 mt-1">{errors.email}</p>
             )}
           </div>
         </div>

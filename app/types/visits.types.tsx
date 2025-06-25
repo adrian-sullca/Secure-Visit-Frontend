@@ -19,7 +19,7 @@ export interface ProfessionalVisit {
   visit_id: number;
   company_id: number;
   NIF: string;
-  age: number;
+  age: number | string;
   created_at: string;
   updated_at: string;
   company: Company;
@@ -63,6 +63,7 @@ export interface Visits {
 
 export interface VisitFormatted {
   id: string | number;
+  family_visit_id: string | number;
   user_id: string | number;
   visit_id: string | number;
   visit_type: string;
@@ -129,7 +130,7 @@ export interface VisitFilters {
   companyTelephone: string;
 }
 
-export interface FormDataAddFamilyVisit {
+export interface FormDataFamilyVisit {
   visitType: string;
   motiveId: string;
   motiveDescription: string;
@@ -139,9 +140,14 @@ export interface FormDataAddFamilyVisit {
   studentName: string;
   studentSurname: string;
   studentCourse: string;
+  dateEntry?: string;
+  timeEntry?: string;
+  dateExit?: string;
+  timeExit?: string;
+  visitId?: string;
 }
 
-export interface FormDataAddProfessionalVisit {
+export interface FormDataProfessionalVisit {
   visitType: string;
   serviceId: string;
   taskDescription: string;
@@ -153,4 +159,60 @@ export interface FormDataAddProfessionalVisit {
   companyCIF: string;
   companyName: string;
   companyTelephone: string;
+  dateEntry?: string;
+  timeEntry?: string;
+  dateExit?: string;
+  timeExit?: string;
+}
+
+export interface FormDataEntryVisit {
+  visit_type: string;
+
+  visit_id?: string;
+
+  dateEntryForm?: string;
+  timeEntryForm?: string;
+  dateExitForm?: string;
+  timeExitForm?: string;
+
+  date_entry?: string;
+  date_exit?: string;
+
+  name: string;
+  surname: string;
+  email: string;
+
+  family_visit_id?: string;
+  student_name?: string;
+  student_surname?: string;
+  student_course?: string;
+  motive_id?: string;
+  custom_motive?: string;
+
+  // Professional visits
+  company_id?: string;
+  NIF?: string;
+  age?: string;
+
+  // Professional services
+  service_id?: string;
+  task?: string;
+
+  // Company
+  CIF?: string;
+  company_name?: string;
+  company_telephone?: string;
+}
+
+export interface VisitorData {
+  intent: string;
+  visit_type: string;
+  name: string;
+  surname: string;
+  email: string;
+  NIF: string;
+  age: string;
+  CIF: string;
+  company_name?: string;
+  company_telephone?: string;
 }

@@ -41,6 +41,7 @@ export default function AddOrUpdateVisitModal({
   const [editMode, setEditMode] = useState(false);
   const [visitData, setVisitData] = useState<VisitFormatted>({
     id: selectedVisit?.id ?? "",
+    family_visit_id: selectedVisit?.family_visit_id ?? "",
     user_id: selectedVisit?.user_id ?? "",
     date_entry_value: selectedVisit?.date_entry_value ?? "",
     date_entry_formatted: selectedVisit?.date_entry_formatted ?? "",
@@ -78,8 +79,6 @@ export default function AddOrUpdateVisitModal({
   };
 
   const submitBtnRef = useRef<HTMLButtonElement>(null);
-  const errors = fetcherAddOrUpdate.data?.clientSideValidationErrors || {};
-
   return (
     <Dialog
       open={showModalAddOrUpdate}
@@ -96,6 +95,11 @@ export default function AddOrUpdateVisitModal({
             hidden
           />
           <input type="hidden" name="id" value={visitData.id} />
+          <input
+            type="hidden"
+            name="family_visit_id"
+            value={visitData.family_visit_id}
+          />
           <input type="hidden" name="user_id" value={visitData.user_id} />
           <input
             type="hidden"
@@ -240,6 +244,7 @@ export default function AddOrUpdateVisitModal({
                   editMode={editMode}
                   visitData={visitData}
                   handleChange={handleChange}
+                  fetcherAddOrUpdate={fetcherAddOrUpdate}
                 />
               </div>
               <div className="md:flex justify-between gap-5 space-y-5 md:space-y-0">
@@ -250,7 +255,7 @@ export default function AddOrUpdateVisitModal({
                   editMode={editMode}
                   visitData={visitData}
                   handleChange={handleChange}
-                  errors={errors}
+                  fetcherAddOrUpdate={fetcherAddOrUpdate}
                 />
                 {visitData.visit_type == "family" && (
                   <StudentDataSection

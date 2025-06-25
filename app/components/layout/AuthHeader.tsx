@@ -32,7 +32,7 @@ export default function AuthHeader() {
           </NavLink>
           {user.admin == true ? (
             <NavLink
-              to="/admin/dashboard"
+              to="/admin/dashboard/visitors"
               className={({ isActive }) =>
                 isActive
                   ? "text-custom-blue font-medium px-5 h-full flex items-center transition duration-300 ease-in-out"

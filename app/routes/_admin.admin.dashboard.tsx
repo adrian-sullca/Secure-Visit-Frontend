@@ -17,16 +17,17 @@ export const loader: LoaderFunction = async ({ request }) => {
 export default function AdminLayout() {
   const location = useLocation();
 
-  let activeTab = "resumen";
-  if (location.pathname.startsWith("/admin/dashboard/motives")) activeTab = "motives";
+  let activeTab = "visitors";
+  if (location.pathname.startsWith("/admin/dashboard/motives"))
+    activeTab = "motives";
   else if (location.pathname.startsWith("/admin/dashboard/services"))
     activeTab = "services";
   else if (location.pathname.startsWith("/admin/dashboard/companies"))
     activeTab = "companies";
   else if (location.pathname.startsWith("/admin/dashboard/users"))
     activeTab = "users";
-  else if (location.pathname.startsWith("/admin/dashboard"))
-    activeTab = "resumen";
+  else if (location.pathname.startsWith("/admin/dashboard/visitors"))
+    activeTab = "visitors";
 
   return (
     <>
@@ -35,9 +36,9 @@ export default function AdminLayout() {
         <div className="max-w-7xl mx-auto">
           <Tabs value={activeTab} className="w-full space-y-8">
             <TabsList className="grid w-full grid-cols-5">
-              <Link to="/admin/dashboard">
-                <TabsTrigger className="w-full" value="resumen">
-                  Resumen
+              <Link to="/admin/dashboard/visitors">
+                <TabsTrigger className="w-full" value="visitors">
+                  Visitantes
                 </TabsTrigger>
               </Link>
               <Link to="/admin/dashboard/motives">
@@ -47,7 +48,7 @@ export default function AdminLayout() {
               </Link>
               <Link to="/admin/dashboard/services">
                 <TabsTrigger className="w-full" value="services">
-                  Services
+                  Servicios
                 </TabsTrigger>
               </Link>
               <Link to="/admin/dashboard/companies">

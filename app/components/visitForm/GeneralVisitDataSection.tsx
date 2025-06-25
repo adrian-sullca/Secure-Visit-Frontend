@@ -11,8 +11,12 @@ import { format } from "date-fns";
 import { Textarea } from "~/components/ui/textarea";
 import { CalendarIcon, X } from "lucide-react";
 import { VisitFormatted } from "~/types/visits.types";
-import { useLoaderData } from "@remix-run/react";
-import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
+import { FetcherWithComponents, useLoaderData } from "@remix-run/react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { Calendar } from "~/components/ui/calendar";
@@ -23,6 +27,7 @@ interface GeneralVisitDataSectionProps {
   editMode: boolean;
   visitData: VisitFormatted;
   handleChange: (field: string, value: string) => void;
+  fetcherAddOrUpdate: FetcherWithComponents<any>;
 }
 
 export default function GeneralVisitDataSection({
@@ -30,12 +35,18 @@ export default function GeneralVisitDataSection({
   editMode,
   visitData,
   handleChange,
+  fetcherAddOrUpdate,
 }: GeneralVisitDataSectionProps) {
   const loaderData =
     useLoaderData<typeof import("./../../routes/_auth.visits").loader>();
 
   const [isPopoverDateEntryOpen, setIsPopoverDateEntryOpen] = useState(false);
   const [isPopoverDateExitOpen, setIsPopoverDateExitOpen] = useState(false);
+
+  const errors =
+    fetcherAddOrUpdate.data?.clientSideValidationErrors ||
+    fetcherAddOrUpdate.data?.serverValidationErrors ||
+    {};
 
   return (
     <div className="p-5 border rounded-lg">
@@ -146,18 +157,6 @@ export default function GeneralVisitDataSection({
                           ? format(new Date(visitData.date_entry_value), "PPP")
                           : "Selecciona la fecha de entrada"}
                       </span>
-                      {visitData.date_entry_value && (
-                        <div
-                          className="ml-auto"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleChange("date_entry_value", "");
-                            setIsPopoverDateEntryOpen(false);
-                          }}
-                        >
-                          <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                        </div>
-                      )}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -269,7 +268,13 @@ export default function GeneralVisitDataSection({
                       initialFocus
                     />
                   </PopoverContent>
-                  <div className="min-h-[16px]"></div>
+                  <div className="min-h-[16px]">
+                    {errors.dateExit && (
+                      <p className="text-xs text-red-600 mt-1">
+                        {errors.dateExit}
+                      </p>
+                    )}
+                  </div>
                 </Popover>
               ) : (
                 <>
@@ -304,14 +309,30 @@ export default function GeneralVisitDataSection({
             </div>
             <div className="space-y-1 w-full">
               <Label>Hora salida</Label>
-              <Input
-                type="time"
-                disabled={showMode && !editMode}
-                value={visitData.time_exit ?? ""}
-                name="time_exit"
-                onChange={(e) => handleChange("time_exit", e.target.value)}
-              ></Input>
-              <div className="min-h-[16px]"></div>
+              <div className="relative">
+                <Input
+                  type="time"
+                  disabled={showMode && !editMode}
+                  value={visitData.time_exit ?? ""}
+                  name="time_exit"
+                  onChange={(e) => handleChange("time_exit", e.target.value)}
+                  className="pr-8"
+                />
+                {visitData.time_exit && (
+                  <button
+                    type="button"
+                    onClick={() => handleChange("time_exit", "")}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              <div className="min-h-[16px]">
+                {errors.timeExit && (
+                  <p className="text-xs text-red-600 mt-1">{errors.timeExit}</p>
+                )}
+              </div>
             </div>
           </div>
         )}

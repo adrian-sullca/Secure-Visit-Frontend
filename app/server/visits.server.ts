@@ -1,11 +1,12 @@
 import {
   Visits,
   VisitFilters,
-  FormDataAddFamilyVisit,
-  FormDataAddProfessionalVisit,
+  FormDataEntryVisit,
+  VisitorData,
 } from "~/types/visits.types";
 import axiosInstance from "~/config/axios.config";
 import { isAxiosError } from "axios";
+import { ValidationErrors } from "~/types/general.types";
 
 export async function getAllVisits(authToken: string, filters?: VisitFilters) {
   try {
@@ -56,7 +57,7 @@ export async function getAllVisits(authToken: string, filters?: VisitFilters) {
         },
       }
     );
-
+    console.log("aquiii", response.data.data[0]);
     if (response.status === 200) {
       return {
         meta: {
@@ -73,84 +74,109 @@ export async function getAllVisits(authToken: string, filters?: VisitFilters) {
   }
 }
 
-export async function createFamilyVisit(
+export async function createEntryVisit(
   authToken: string,
-  familyVisit: FormDataAddFamilyVisit
+  entryVisitData: FormDataEntryVisit
 ) {
   try {
-    const familyVisitMap = {
-      visit_type: "family",
-      name: familyVisit.visitName,
-      surname: familyVisit.visitSurname,
-      email: familyVisit.visitEmail,
-      student_name: familyVisit.studentName,
-      student_surname: familyVisit.studentSurname,
-      student_course: familyVisit.studentCourse,
-      motive_id: familyVisit.motiveId,
-      custom_motive: familyVisit.motiveDescription,
-    };
-
-    const response = await axiosInstance.post("/entry", familyVisitMap, {
+    const response = await axiosInstance.post("/entry", entryVisitData, {
       headers: {
         Authorization: `Bearer ${authToken}`,
       },
     });
-
     if (response.status == 201) {
-      console.log(response.data);
+      return {
+        success: true,
+        message: "Entrada creada correctamente",
+      };
     }
   } catch (error) {
     if (isAxiosError(error)) {
-      console.error("Mensaje del backend:", error.response?.data?.message);
-
+      console.log("aqui2");
+      console.log(error.response);
       if (error.response?.data?.errors) {
-        console.error("Errores de validación:", error.response.data.errors);
+        const backendErrors = error.response?.data?.errors;
+
+        const serverValidationErrors: ValidationErrors = {};
+        if (backendErrors) {
+          for (const key in backendErrors) {
+            if (Array.isArray(backendErrors[key])) {
+              serverValidationErrors[key] = backendErrors[key][0];
+            } else {
+              serverValidationErrors[key] = backendErrors[key];
+            }
+          }
+        }
+
+        console.log("Errores de validación: ", serverValidationErrors);
+        return {
+          success: false,
+          message: "Error al crear entrada",
+          serverValidationErrors,
+        };
       }
     } else {
-      console.error("Error desconocido:", error);
+      return {
+        success: false,
+        message: "Error inesperado",
+      };
     }
   }
 }
 
-export async function createProfessionalVisit(
+export async function updateVisitAndEntry(
   authToken: string,
-  professionalVisit: FormDataAddProfessionalVisit
+  entryId: string,
+  entryVisitData: FormDataEntryVisit
 ) {
   try {
-    const professionalVisitMap = {
-      visit_type: "professional",
-      name: professionalVisit.visitName,
-      surname: professionalVisit.visitSurname,
-      email: professionalVisit.visitEmail,
-      NIF: professionalVisit.professionalNIF,
-      age: professionalVisit.professionalAge,
-      task: professionalVisit.taskDescription,
-      service_id: professionalVisit.serviceId,
-      CIF: professionalVisit.companyCIF,
-      company_name: professionalVisit.companyName,
-      company_telephone: professionalVisit.companyTelephone,
-    };
+    const response = await axiosInstance.patch(
+      `/entry/${entryId}`,
+      entryVisitData,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      }
+    );
 
-    const response = await axiosInstance.post("/entry", professionalVisitMap, {
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
-    });
-
-    if (response.status == 201) {
-      console.log(response.data);
+    if (response.status == 200) {
+      return {
+        success: true,
+        message: "Visita actualizada con éxito",
+      };
     }
   } catch (error) {
-    console.log(error);
-    console.log(error.response.data);
     if (isAxiosError(error)) {
-      console.error("Mensaje del backend:", error.response?.data?.message);
-
       if (error.response?.data?.errors) {
         console.error("Errores de validación:", error.response.data.errors);
+        const backendErrors = error.response?.data?.errors;
+
+        const serverValidationErrors: ValidationErrors = {};
+        if (backendErrors) {
+          for (const key in backendErrors) {
+            if (Array.isArray(backendErrors[key])) {
+              serverValidationErrors[key] = backendErrors[key][0];
+            } else {
+              serverValidationErrors[key] = backendErrors[key];
+            }
+          }
+        }
+
+        console.log("serverV", serverValidationErrors);
+        return {
+          success: false,
+          message:
+            error.response?.data?.message || "Error al actualizar la visita",
+          serverValidationErrors,
+        };
       }
     } else {
-      console.error("Error desconocido:", error);
+      console.error("Error inesperado:", error);
+      return {
+        success: false,
+        message: "Error al actualizar la visita de familia",
+      };
     }
   }
 }
@@ -172,7 +198,6 @@ export async function markExitVisit(authToken: string, entryId: number) {
     }
   } catch (error) {
     console.log(error);
-    console.log(error.response);
   }
 }
 
@@ -217,6 +242,7 @@ function formatVisitData(visits: Visits[]) {
       visit_email: visit.visit?.email ?? "",
 
       // Family Visit Data
+      family_visit_id: family?.id ?? null,
       student_name: family?.student_name ?? null,
       student_surname: family?.student_surname ?? null,
       student_course: family?.student_course ?? null,
@@ -249,7 +275,7 @@ export async function getAllVisitors(authToken: string) {
         Authorization: `Bearer ${authToken}`,
       },
     });
-    console.log(response.data)
+
     if (response.status === 200) {
       return {
         success: true,
@@ -261,5 +287,127 @@ export async function getAllVisitors(authToken: string) {
     return {
       success: false,
     };
+  }
+}
+
+export async function deleteEntryVisit(authToken: string, entryId: string) {
+  try {
+    const response = await axiosInstance.delete(`/entry/${entryId}`, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+
+    if (response.status == 204) {
+      return {
+        success: true,
+        message: "Entrada eliminada correctamente",
+      };
+    }
+  } catch (error) {
+    return {
+      success: false,
+      message: "Error al eliminar entrada",
+    };
+  }
+}
+
+export async function addVisitor(authToken: string, visitorData: VisitorData) {
+  try {
+    const response = await axiosInstance.post("/visitor", visitorData, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+
+    if (response.status == 200) {
+      return {
+        success: true,
+        message: "Visitante creado con éxito",
+      };
+    }
+  } catch (error) {
+    if (isAxiosError(error)) {
+      if (error.response?.data?.errors) {
+        const backendErrors = error.response?.data?.errors;
+
+        const serverValidationErrors: ValidationErrors = {};
+        if (backendErrors) {
+          for (const key in backendErrors) {
+            if (Array.isArray(backendErrors[key])) {
+              serverValidationErrors[key] = backendErrors[key][0];
+            } else {
+              serverValidationErrors[key] = backendErrors[key];
+            }
+          }
+        }
+
+        console.log("serverV", serverValidationErrors);
+        return {
+          success: false,
+          message:
+            error.response?.data?.message || "Error al crear el visitante",
+          serverValidationErrors,
+        };
+      }
+    } else {
+      console.error("Error inesperado:", error);
+      return {
+        success: false,
+        message: "Error al crear el visitante",
+      };
+    }
+  }
+}
+
+export async function updateVisitor(
+  authToken: string,
+  visitorData: VisitorData,
+  visitorId: string
+) {
+  try {
+    const response = await axiosInstance.patch(`/visitor/${visitorId}`, visitorData, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+
+    if (response.status == 200) {
+      return {
+        success: true,
+        message: "Visitante actualizado con éxito",
+      };
+    }
+  } catch (error) {
+    if (isAxiosError(error)) {
+      if (error.response?.data?.errors) {
+        const backendErrors = error.response?.data?.errors;
+
+        const serverValidationErrors: ValidationErrors = {};
+        if (backendErrors) {
+          for (const key in backendErrors) {
+            if (Array.isArray(backendErrors[key])) {
+              serverValidationErrors[key] = backendErrors[key][0];
+            } else {
+              serverValidationErrors[key] = backendErrors[key];
+            }
+          }
+        }
+
+        console.log("serverV", serverValidationErrors);
+        return {
+          success: false,
+          message:
+            error.response?.data?.message || "Error al actualizar el visitante",
+          serverValidationErrors,
+        };
+      }
+    } else {
+      console.error("Error inesperado:", error);
+      return {
+        success: false,
+        message: "Error al actualizar el visitante",
+      };
+    }
   }
 }

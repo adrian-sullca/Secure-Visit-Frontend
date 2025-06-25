@@ -24,7 +24,10 @@ export default function CompanyDataSection({
   fetcherAddOrUpdate,
   allCompanies,
 }: CompanyDataSectionProps) {
-  const errors = fetcherAddOrUpdate.data?.clientSideValidationErrors || {};
+  const errors =
+    fetcherAddOrUpdate.data?.clientSideValidationErrors ||
+    fetcherAddOrUpdate.data?.serverValidationErrors ||
+    {};
 
   return (
     <div className="p-5 border rounded-lg w-full">
@@ -51,12 +54,12 @@ export default function CompanyDataSection({
             }
             value={visitData.company_CIF || ""}
             disabled={showMode && !editMode}
-            hasError={!!errors.companyCIF}
+            hasError={!!errors.CIF}
             onChange={(value) => handleChange("company_CIF", value)}
           />
           <div className="min-h-[16px]">
-            {errors.companyCIF && (
-              <p className="text-xs text-red-600 mt-1">{errors.companyCIF}</p>
+            {errors.CIF && (
+              <p className="text-xs text-red-600 mt-1">{errors.CIF}</p>
             )}
           </div>
         </div>
@@ -69,13 +72,13 @@ export default function CompanyDataSection({
             onChange={(e) => handleChange("company_name", e.target.value)}
             className={cn(
               "input",
-              errors.companyName &&
+              errors.company_name &&
                 "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
             )}
           ></Input>
           <div className="min-h-[16px]">
-            {errors.companyName && (
-              <p className="text-xs text-red-600 mt-1">{errors.companyName}</p>
+            {errors.company_name && (
+              <p className="text-xs text-red-600 mt-1">{errors.company_name}</p>
             )}
           </div>
         </div>
@@ -95,13 +98,13 @@ export default function CompanyDataSection({
             }
             value={visitData.company_telephone || ""}
             disabled={showMode && !editMode}
-            hasError={!!errors.companyTelephone}
+            hasError={!!errors.company_telephone}
             onChange={(value) => handleChange("company_telephone", value)}
           />
           <div className="min-h-[16px]">
-            {errors.companyTelephone && (
+            {errors.company_telephone && (
               <p className="text-xs text-red-600 mt-1">
-                {errors.companyTelephone}
+                {errors.company_telephone}
               </p>
             )}
           </div>

@@ -53,6 +53,7 @@ import {
   Download,
   Funnel,
   Plus,
+  Trash,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { Calendar } from "~/components/ui/calendar";
@@ -120,6 +121,7 @@ export default function VisitsTable() {
   const [fetcherKey, setFetcherKey] = useState("add-or-update-1");
   const fetcherAddOrUpdate = useFetcher({ key: fetcherKey });
   const fetcherMarkExit = useFetcher();
+  const fetcherDeleteEntry = useFetcher();
 
   const handleCloseModal = () => {
     setShowModalAddOrUpdate(false);
@@ -248,6 +250,22 @@ export default function VisitsTable() {
       }
     }
   }, [fetcherMarkExit.data]);
+
+  useEffect(() => {
+    if (fetcherDeleteEntry.data?.message) {
+      if (fetcherDeleteEntry.data.success) {
+        toast.success(fetcherDeleteEntry.data.message);
+        const form = document.getElementById("filters-form") as HTMLFormElement;
+        if (form) {
+          const pageInput = form.elements.namedItem("page") as HTMLInputElement;
+          if (pageInput) pageInput.value = "1";
+          fetcher.submit(form);
+        }
+      } else {
+        toast.error(fetcherDeleteEntry.data.message);
+      }
+    }
+  }, [fetcherDeleteEntry.data]);
 
   return (
     <>
@@ -937,7 +955,7 @@ export default function VisitsTable() {
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          {!visit.time_exit && (
+                          {!visit.time_exit ? (
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button size="sm">
@@ -973,6 +991,49 @@ export default function VisitsTable() {
                                       }}
                                     >
                                       Confirmar Salida
+                                    </Button>
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          ) : (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  className="bg-red-500 hover:bg-red-600"
+                                >
+                                  <Trash className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    Eliminar Entrada
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    ¿Seguro de eliminar la entrada de{" "}
+                                    {visit.visit_name} {visit.visit_surname}?
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>
+                                    Cancelar
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction asChild>
+                                    <Button
+                                      className="bg-red-500 hover:bg-red-600"
+                                      onClick={() => {
+                                        fetcherDeleteEntry.submit(
+                                          {
+                                            intent: "delete",
+                                            entry_id: visit.id,
+                                          },
+                                          { method: "post" }
+                                        );
+                                      }}
+                                    >
+                                      Eliminar
                                     </Button>
                                   </AlertDialogAction>
                                 </AlertDialogFooter>

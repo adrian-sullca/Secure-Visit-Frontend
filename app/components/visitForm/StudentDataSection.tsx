@@ -30,7 +30,10 @@ export default function StudentDataSection({
   const loaderData =
     useLoaderData<typeof import("./../../routes/_auth.visits").loader>();
 
-  const errors = fetcherAddOrUpdate.data?.clientSideValidationErrors || {};
+  const errors =
+    fetcherAddOrUpdate.data?.clientSideValidationErrors ||
+    fetcherAddOrUpdate.data?.serverValidationErrors ||
+    {};
 
   return (
     <div className="p-5 border rounded-lg w-full">
@@ -51,13 +54,13 @@ export default function StudentDataSection({
             name="student_name"
             className={cn(
               "input",
-              errors.studentName &&
+              errors.student_name &&
                 "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
             )}
           ></Input>
           <div className="min-h-[16px]">
-            {errors.studentName && (
-              <p className="text-xs text-red-600 mt-1">{errors.studentName}</p>
+            {errors.student_name && (
+              <p className="text-xs text-red-600 mt-1">{errors.student_name}</p>
             )}
           </div>
         </div>
@@ -70,14 +73,14 @@ export default function StudentDataSection({
             name="student_surname"
             className={cn(
               "input",
-              errors.studentSurname &&
+              errors.student_surname &&
                 "border-red-500 focus:border-red-500 focus-visible:ring-red-500"
             )}
           ></Input>
           <div className="min-h-[16px]">
-            {errors.studentSurname && (
+            {errors.student_surname && (
               <p className="text-xs text-red-600 mt-1">
-                {errors.studentSurname}
+                {errors.student_surname}
               </p>
             )}
           </div>
@@ -96,7 +99,7 @@ export default function StudentDataSection({
               <SelectTrigger
                 className={cn(
                   "input",
-                  errors.studentCourse &&
+                  errors.student_course &&
                     "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
                 )}
               >
@@ -112,9 +115,9 @@ export default function StudentDataSection({
             </Select>
           )}
           <div className="min-h-[16px]">
-            {errors.studentCourse && (
+            {errors.student_course && (
               <p className="text-xs text-red-600 mt-1">
-                {errors.studentCourse}
+                {errors.student_course}
               </p>
             )}
           </div>

@@ -43,7 +43,7 @@ async function createUserSession(authToken: string, admin: boolean) {
   const session = await sessionStorage.getSession();
   session.set("authToken", authToken);
   if (admin) {
-    return redirect("/admin/dashboard", {
+    return redirect("/admin/dashboard/visitors", {
       headers: {
         "Set-Cookie": await sessionStorage.commitSession(session),
       },
